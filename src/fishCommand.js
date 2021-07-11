@@ -21,6 +21,12 @@ export function FISH(fishDataFile, fs, user, channel, client) {
         console.error(err);
       }
     }
+    if (timeout > 10) {
+      console.log('tries to write file exceeded');
+      client.say(channel, `error reading fish data file!`);
+      return;
+    }
+    timeout++;
   }
   let gaus = -5;
   while (gaus > 25 || gaus < -4.5) {
@@ -104,6 +110,7 @@ export function FISH_STATS(fishDataFile, fs, user, channel, client) {
   const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
   let fishData;
   let access = false;
+  let timeout = 0;
   while(!access){
     try {
       const data = fs.readFileSync(fishDataFile);
@@ -118,6 +125,12 @@ export function FISH_STATS(fishDataFile, fs, user, channel, client) {
         console.error(err);
       }
     }
+    if (timeout > 10) {
+      console.log('tries to write file exceeded');
+      client.say(channel, `error reading fish data file!`);
+      return;
+    }
+    timeout++;
   }
   //message to chat later
   let message = "";

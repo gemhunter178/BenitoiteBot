@@ -1,8 +1,9 @@
 import tmi from 'tmi.js'
 import fs from 'fs'
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, BOT_MASTER } from './constants'
-import { FISH , FISH_STATS } from './fishCommand'
 import { files } from './filePaths'
+import { FISH , FISH_STATS } from './fishCommand'
+import { CODEWORDGAME } from './codewordsGame'
 
 const client = new tmi.Client({
 	options: { debug: true },
@@ -28,19 +29,6 @@ client.on('message', (channel, user, message, self) => {
 
 	//commands past this must start with !
 	if(!message.startsWith('!')) return;
-	
-	if(/^!timer\s+/i.test(message)){
-		let query = message.replace(/^!timer\s+/,'');
-		let timeMin = parseInt(query);
-		let plural = ' minutes!';
-		if (timeMin === 1) plural = ' minute!';
-			
-		client.say(channel, `Timer set for ` + timeMin + plural);
-		console.log('timer set for ' + timeMin + ' minutes from now');
-		setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000);
-		setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 1000);
-		setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 2000);
-	}
 
 	if(message.toLowerCase() === '!hello') {
 		// "@user, heya!"
@@ -57,8 +45,29 @@ client.on('message', (channel, user, message, self) => {
 		console.log(user);
 		console.log(isModUp);
 	}
-
+  
+  //the famous !fish commands
 	if(message.toLowerCase() === '!fish') FISH(files.fishDataFiles, fs, user, channel, client);
 	
 	if(message.toLowerCase() === '!fishstats') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
+  
+  //messages that need to match only the first word
+  
+  let firstWord = message.split(' ')[0];
+  
+  if(/^!timer/i.test(firstWord)){
+    let query = message.replace(/^!timer[\s]*/,'');
+    let timeMin = parseInt(query);
+    let plural = ' minutes!';
+    if (timeMin === 1) plural = ' minute!';
+      
+    client.say(channel, `Timer set for ` + timeMin + plural);
+    console.log('timer set for ' + timeMin + ' minutes from now');
+    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000);
+    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 1000);
+    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 2000);
+  }
+  
+  //codewords
+  if(/^!codeword/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
 });
