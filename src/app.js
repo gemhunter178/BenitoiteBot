@@ -25,21 +25,21 @@ client.on('message', (channel, user, message, self) => {
 	let isBroadcaster = channel.slice(1) === user.username;
 	let isModUp = isMod || isBroadcaster;
 	// Ignore echoed messages and ones that do not start with !.
-	if(self) return;
+	if (self) return;
 
 	//commands past this must start with !
-	if(!message.startsWith('!')) return;
+	if (!message.startsWith('!')) return;
 
-	if(message.toLowerCase() === '!hello') {
+	if (message.toLowerCase() === '!hello') {
 		// "@user, heya!"
 		client.say(channel, `Heya, ` + user['display-name'] + `!`);
 	}
 	
-	if(message.toLowerCase() === '!goodbye' && user.username === BOT_MASTER) {
+	if (message.toLowerCase() === '!goodbye' && user.username === BOT_MASTER) {
 		client.say(channel, `Alright, see you later!`);
 	}
 
-	if(message.toLowerCase() === '!logme') {
+	if (message.toLowerCase() === '!logme') {
 		//mostly for debug purposes
 		client.say(channel, user['display-name'] + ` has been logged on console`);
 		console.log(user);
@@ -47,17 +47,20 @@ client.on('message', (channel, user, message, self) => {
 	}
   
   //the famous !fish commands
-	if(message.toLowerCase() === '!fish') FISH(files.fishDataFiles, fs, user, channel, client);
+	if (message.toLowerCase() === '!fish') FISH(files.fishDataFiles, fs, user, channel, client);
 	
-	if(message.toLowerCase() === '!fishstats') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
+	if (message.toLowerCase() === '!fishstats') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
   
   //messages that need to match only the first word
   
   let firstWord = message.split(' ')[0];
   
-  if(/^!timer/i.test(firstWord)){
+  if (/^!timer/i.test(firstWord)){
     let query = message.replace(/^!timer[\s]*/,'');
     let timeMin = parseInt(query);
+    if (timeMin = NaN){
+      timeMin = 10;
+    }
     let plural = ' minutes!';
     if (timeMin === 1) plural = ' minute!';
       
@@ -69,5 +72,5 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //codewords
-  if(/^!codeword/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
+  if (/^!codeword/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
 });

@@ -5,28 +5,18 @@ export function FISH(fishDataFile, fs, user, channel, client) {
   //console.log(YearMonth);
   let fishData;
   let change = false;
-  let access = false;
-  let timeout = 0;
-  while(!access){
+  try {
+    const data = fs.readFileSync(fishDataFile);
+    fishData = JSON.parse(data);
+  } catch (err) {
+    console.error(err);
     try {
-      const data = fs.readFileSync(fishDataFile);
-      fishData = JSON.parse(data);
-      access = true;
+      fs.writeFileSync(fishDataFile, '{}');
+      console.log(fishDataFile + ' has been created');
+      fishData = {};
     } catch (err) {
       console.error(err);
-      try {
-        fs.writeFileSync(fishDataFile, '{}');
-        console.log(fishDataFile + ' has been created');
-      } catch (err) {
-        console.error(err);
-      }
     }
-    if (timeout > 10) {
-      console.log('tries to write file exceeded');
-      client.say(channel, `error reading fish data file!`);
-      return;
-    }
-    timeout++;
   }
   let gaus = -5;
   while (gaus > 25 || gaus < -4.5) {
@@ -68,22 +58,22 @@ export function FISH(fishDataFile, fs, user, channel, client) {
     sz = 1;
     }
     fishoutput = user["display-name"] + ' caught a fish of ' + fsh.toFixed(2) + 'kg! (' + (fsh * 2.20462).toFixed(2) + 'lbs) ' + msg[sz];
-  if(/6[.]*9/.test(fishoutput)){
+  if (/6[.]*9/.test(fishoutput)){
     fishoutput += " nice. ";
   }
-  if(!fishData.hasOwnProperty(channel)){
+  if (!fishData.hasOwnProperty(channel)){
     fishData[channel] = {};
   }
-  if(!fishData[channel].hasOwnProperty(YearMonth)){
+  if (!fishData[channel].hasOwnProperty(YearMonth)){
     fishData[channel][YearMonth] = {maxUser: "", max: 0, minUser: "", min:50};
   }
-  if(fishData[channel][YearMonth].max < fsh){
+  if (fishData[channel][YearMonth].max < fsh){
     fishData[channel][YearMonth].max = fsh;
     fishData[channel][YearMonth].maxUser = user["display-name"];
     fishoutput += " - That's a new largest fish!";
     change = true;
   }
-  if(fishData[channel][YearMonth].min > fsh){
+  if (fishData[channel][YearMonth].min > fsh){
     fishData[channel][YearMonth].min = fsh;
     fishData[channel][YearMonth].minUser = user["display-name"];
     fishoutput += " - That's a new smallest fish!";
@@ -94,7 +84,7 @@ export function FISH(fishDataFile, fs, user, channel, client) {
   }
   
   client.say(channel, fishoutput);
-  if(change){
+  if (change){
     const dataToWrite = JSON.stringify(fishData);
     try {
       fs.writeFileSync(fishDataFile, dataToWrite);
@@ -105,36 +95,26 @@ export function FISH(fishDataFile, fs, user, channel, client) {
 }
   
 export function FISH_STATS(fishDataFile, fs, user, channel, client) {
-  //just read fish stats and output the month's records
+  //for now just read fish stats and output the month's records
   const now = new Date();
   const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
   let fishData;
-  let access = false;
-  let timeout = 0;
-  while(!access){
+  try {
+    const data = fs.readFileSync(fishDataFile);
+    fishData = JSON.parse(data);
+  } catch (err) {
+    console.error(err);
     try {
-      const data = fs.readFileSync(fishDataFile);
-      fishData = JSON.parse(data);
-      access = true;
+      fs.writeFileSync(fishDataFile, '{}');
+      console.log(fishDataFile + ' has been created');
+      fishData = {};
     } catch (err) {
       console.error(err);
-      try {
-        fs.writeFileSync(fishDataFile, '{}');
-        console.log(fishDataFile + ' has been created');
-      } catch (err) {
-        console.error(err);
-      }
     }
-    if (timeout > 10) {
-      console.log('tries to write file exceeded');
-      client.say(channel, `error reading fish data file!`);
-      return;
-    }
-    timeout++;
   }
   //message to chat later
   let message = "";
-  if(fishData.hasOwnProperty(channel) && fishData[channel].hasOwnProperty(YearMonth)){
+  if (fishData.hasOwnProperty(channel) && fishData[channel].hasOwnProperty(YearMonth)){
     fishData = fishData[channel][YearMonth]
     message = "The !fish records for this month: largest was " + fishData.maxUser + " with a fish of " + fishData.max.toFixed(2) + 'kg! (' + (fishData.max * 2.20462).toFixed(2) + "lbs) and the smallest was " + fishData.minUser + " with a fish of " + fishData.min.toFixed(2) + 'kg! (' + (fishData.min * 2.20462).toFixed(2) + "lbs)";
   } else {
