@@ -15,3 +15,4 @@ docs
 cassettes
 src/constants.js
 .vs
+data/*.json
