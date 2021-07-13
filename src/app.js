@@ -20,6 +20,8 @@ client.connect();
 //setInterval(function(){client.say([insert channel name here], [message])},[time in ms]);
 
 client.on('message', (channel, user, message, self) => {
+  //messages that need to match only the first word
+  let firstWord = message.split(' ')[0];
 	//mod only stuff
 	let isMod = user.mod || user['user-type'] === 'mod';
 	let isBroadcaster = channel.slice(1) === user.username;
@@ -47,13 +49,9 @@ client.on('message', (channel, user, message, self) => {
 	}
   
   //the famous !fish commands
-	if (message.toLowerCase() === '!fish') FISH(files.fishDataFiles, fs, user, channel, client);
+	if (firstWord.toLowerCase() === '!fishbeta') FISH(files.fishDataFiles, fs, user, channel, client);
 	
-	if (message.toLowerCase() === '!fishstats') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
-  
-  //messages that need to match only the first word
-  
-  let firstWord = message.split(' ')[0];
+	if (firstWord.toLowerCase() === '!fishstatsbeta') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
   
   if (/^!timer/i.test(firstWord)){
     let query = message.replace(/^!timer[\s]*/,'');
@@ -72,5 +70,5 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //codewords
-  if (/^!codeword/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
+  if (/^!codewordbeta/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
 });

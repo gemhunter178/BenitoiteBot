@@ -17,7 +17,21 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
   }
   if (!cdewrd.hasOwnProperty(channel)){
     let word = 'test';
-    //word = word[Math.floor(Math.random()*word.length)];
+    let https = require('https');
+    https.get('https://www.randomlists.com/data/words.json', (response) => {
+      let str = '';
+      response.on('data', function (appendStr) {
+        str += appendStr;
+      });
+      
+      response.on('end', function () {
+        console.log(str);
+        word = JSON.parse(str).data;
+      });
+    }).on("error", (err) => {
+      console.log(err.message);
+    });
+    word = word[Math.floor(Math.random()*word.length)];
     cdewrd[channel] = word;
     console.log(cdewrd);
     try {

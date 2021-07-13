@@ -59,7 +59,7 @@ export function FISH(fishDataFile, fs, user, channel, client) {
     }
     fishoutput = user["display-name"] + ' caught a fish of ' + fsh.toFixed(2) + 'kg! (' + (fsh * 2.20462).toFixed(2) + 'lbs) ' + msg[sz];
   if (/6[.]*9/.test(fishoutput)){
-    fishoutput += " nice. ";
+    fishoutput += "- nice ";
   }
   if (!fishData.hasOwnProperty(channel)){
     fishData[channel] = {};
