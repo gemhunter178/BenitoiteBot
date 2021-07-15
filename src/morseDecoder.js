@@ -46,16 +46,16 @@ export function MORSE(user, channel, client, message){
         '---..': '8',
         '----.': '9',
         '-----': '0',
-        '_': ' ',
+        _: ' ',
         '⠀': ' '
-      }
+      };
       message = message.split(' ');
       for (let i = 0; i < message.length; i++){
         if (toWord.hasOwnProperty(message[i])){
           message[i] = toWord[message[i]];
         }
       }
-      message = message.join('');
+      message = ' ' + message.join('');
     } else {
       //probably a word to morse
       message = message.toUpperCase();
@@ -86,18 +86,18 @@ export function MORSE(user, channel, client, message){
         X: '-..-',
         Y: '-.--',
         Z: '--..',
-        '1': '.----',
-        '2': '..---',
-        '3': '...--',
-        '4': '....-',
-        '5': '.....',
-        '6': '-....',
-        '7': '--...',
-        '8': '---..',
-        '9': '----.',
-        '0': '-----',
+        1: '.----',
+        2: '..---',
+        3: '...--',
+        4: '....-',
+        5: '.....',
+        6: '-....',
+        7: '--...',
+        8: '---..',
+        9: '----.',
+        0: '-----',
         ' ': '⠀'
-      }
+      };
       message = message.split('');
       for (let i = 0; i < message.length; i++){
         if (toMorse.hasOwnProperty(message[i])){
