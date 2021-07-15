@@ -1,5 +1,5 @@
 export function CODEWORDGAME(file, fs, user, channel, client, message) {
-  let query = message.replace(/^!codeword\s+/,'');
+  let query = message.replace(/^!+codeword\s+/,'');
   query = query.replace(/\s/,'');
   let cdewrd;
   try {
