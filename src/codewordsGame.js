@@ -26,7 +26,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     let change = false;
     let samePlace = 0;
     let sameLetter = 0;
-    const oldQuery = query;
+    let oldQuery = query;
     const CWLength = cdewrd[channel].length;
     /* unused since cheesing the game this way isn't actually that helpful
     if (query.length < CWLength){
@@ -36,12 +36,14 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     query = query.slice(0,CWLength);
     if(query != oldQuery){
       change = true;
+      oldQuery = query;
     }
     let compareCW = cdewrd[channel].split('');
     query = query.split('');
     for (let i = 0; i < CWLength; i++) {
       if(query[i] === compareCW[i]){
         samePlace++;
+        query[i] = '*';
         compareCW[i] = '__';
       }
     }
@@ -49,13 +51,14 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
       for (let j = 0; j < CWLength; j++) {
         if (query[i] === compareCW[j]) {
           sameLetter++;
+          console.log('matched ' + compareCW[j]);
           compareCW[j] = '__';
           break;
         }
       }
     }
     if(samePlace != CWLength){
-      query = query.join('') + ' has ' + samePlace + ' character(s) in the same place and ' + sameLetter + ' other matching letter(s) as the codeword.';
+      query = oldQuery + ' has ' + samePlace + ' character(s) in the right position and ' + sameLetter + ' other matching letter(s) as the codeword.';
     } else {
       query = user['display-name'] + ' has found the codeword! - ' + cdewrd[channel];
       getNewWord(false);

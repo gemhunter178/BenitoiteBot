@@ -67,8 +67,8 @@ client.on('message', (channel, user, message, self) => {
     client.say(channel, `Timer set for ` + timeMin + plural);
     console.log('timer set for ' + timeMin + ' minutes from now');
     setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000);
-    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 1000);
-    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000 + 2000);
+    setTimeout(function(){client.say(channel, `Timer alert!!`)},timeMin * 60000 + 1000);
+    setTimeout(function(){client.say(channel, `Timer alert!!!`)},timeMin * 60000 + 2000);
   }
   
   //codewords
