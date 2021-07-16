@@ -40,7 +40,8 @@ client.on('message', (channel, user, message, self) => {
   
   if (message.toLowerCase() === '!!goodbye' && user.username === BOT_MASTER) {
     client.say(channel, `Alright, see you later!`);
-    this_is_undefined_to_stop_bot;
+    console.log('bot terminated by user');
+    process.exit(0);
   }
 
   if (message.toLowerCase() === '!!logme') {
