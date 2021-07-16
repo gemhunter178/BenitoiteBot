@@ -55,7 +55,7 @@ export function MORSE(user, channel, client, message){
           message[i] = toWord[message[i]];
         }
       }
-      message = 'char: ' + message.join('');
+      message = 'text: ' + message.join('');
     } else {
       //probably a word to morse
       message = message.toUpperCase();

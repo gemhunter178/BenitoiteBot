@@ -59,7 +59,7 @@ client.on('message', (channel, user, message, self) => {
   if (/^!!timer/i.test(firstWord) && isModUp){
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseInt(query);
-    if (timeMin === NaN){
+    if (timeMin === NaN || timeMin === 0){
       timeMin = 10;
     }
     let plural = ' minutes!';
