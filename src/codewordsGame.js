@@ -28,36 +28,37 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     let sameLetter = 0;
     const oldQuery = query;
     const CWLength = cdewrd[channel].length;
+    /* unused since cheesing the game this way isn't actually that helpful
     if (query.length < CWLength){
       query = 'The codeword is ' + CWLength + ' characters long. Please enter a query of that length';
+    }*/
+    query = query.padEnd(CWLength,'-');
+    query = query.slice(0,CWLength);
+    if(query != oldQuery){
+      change = true;
+    }
+    let compareCW = cdewrd[channel].split('');
+    query = query.split('');
+    for (let i = 0; i < CWLength; i++) {
+      if(query[i] === compareCW[i]){
+        samePlace++;
+        compareCW[i] = '__';
+      }
+    }
+    for (let i = 0; i < CWLength; i++) {
+      for (let j = 0; j < CWLength; j++) {
+        if (query[i] === compareCW[j]) {
+          sameLetter++;
+          compareCW[j] = '__';
+          break;
+        }
+      }
+    }
+    if(samePlace != CWLength){
+      query = query.join('') + ' has ' + samePlace + ' character(s) in the same place and ' + sameLetter + ' other matching letter(s) as the codeword.';
     } else {
-      query = query.slice(0,CWLength);
-      if(query != oldQuery){
-        change = true;
-      }
-      let compareCW = cdewrd[channel].split('');
-      query = query.split('');
-      for (let i = 0; i < CWLength; i++) {
-        if(query[i] === compareCW[i]){
-          samePlace++;
-          compareCW[i] = '_';
-        }
-      }
-      for (let i = 0; i < CWLength; i++) {
-        for (let j = 0; j < CWLength; j++) {
-          if (query[i] === compareCW[j]) {
-            sameLetter++;
-            compareCW[j] = '_';
-            break;
-          }
-        }
-      }
-      if(samePlace != CWLength){
-        query = query.join('') + ' has ' + samePlace + ' character(s) in the same place and ' + sameLetter + ' other matching letter(s) as the codeword.';
-      } else {
-        query = user['display-name'] + ' has found the codeword! - ' + cdewrd[channel];
-        getNewWord(false);
-      }
+      query = user['display-name'] + ' has found the codeword! - ' + cdewrd[channel];
+      getNewWord(false);
     }
     client.say(channel, query);
   }
@@ -83,6 +84,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
   
   let query = message.replace(/^!+codeword\s*/,'');
   query = query.replace(/\s/,'');
+  query = query.toLowerCase();
   let cdewrd;
   try {
     const data = fs.readFileSync(file);
