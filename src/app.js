@@ -15,11 +15,34 @@ const client = new tmi.Client({
   channels: CHANNELS
 });
 
+let cooldown = {};
+
+function setCooldown(channel, command, time){
+  cooldown[channel][command] = true;
+  setTimeout(function(){cooldown[channel][command] = false;},time);
+}
+
 client.connect();
 
 //setInterval(function(){client.say('[channel]', `[message]`)},[time,ms]);
 
 client.on('message', (channel, user, message, self) => {
+  //initialize cooldown object for channel
+  if (!cooldown.hasOwnProperty(channel)){
+    //also a good list of all commands this currently has
+    cooldown[channel] = {
+      hello: false,
+      logme: false,
+      fish: false,
+      fishstats: false,
+      timer: false,
+      codeword: false,
+      morse: false
+    };
+  }
+  //debug
+  //console.log(cooldown);
+  
   //messages that need to match only the first word
   let firstWord = message.split(' ')[0];
   //mod only stuff
@@ -32,8 +55,9 @@ client.on('message', (channel, user, message, self) => {
   //commands past this must start with !
   if (!message.startsWith('!')) return;
 
-  if (message.toLowerCase() === '!!hello') {
+  if (message.toLowerCase() === '!!hello' && !cooldown[channel]['hello']) {
     // "@user, heya!"
+    setCooldown(channel, 'hello', 1000);
     client.say(channel, `Heya, ` + user['display-name'] + `!`);
   }
   
@@ -43,19 +67,27 @@ client.on('message', (channel, user, message, self) => {
     process.exit(0);
   }
 
-  if (message.toLowerCase() === '!!logme') {
+  if (message.toLowerCase() === '!!logme' && !cooldown[channel]['logme']) {
     //mostly for debug purposes
+    setCooldown(channel, 'logme', 1000);
     client.say(channel, user['display-name'] + ` has been logged on console`);
     console.log(user);
     console.log(isModUp);
   }
   
   //the famous !fish commands
-  if (firstWord.toLowerCase() === '!!fish') FISH(files.fishDataFiles, fs, user, channel, client);
+  if (firstWord.toLowerCase() === '!!fish' && !cooldown[channel]['fish']) { 
+    setCooldown(channel, 'fish', 5000); 
+    FISH(files.fishDataFiles, fs, user, channel, client);
+  }
   
-  if (firstWord.toLowerCase() === '!!fishstats') FISH_STATS(files.fishDataFiles, fs, user, channel, client);
+  if (firstWord.toLowerCase() === '!!fishstats' && !cooldown[channel]['fishstats']) {
+    setCooldown(channel, 'fishstats', 15000);
+    FISH_STATS(files.fishDataFiles, fs, user, channel, client);
+  }
   
-  if (/^!!timer/i.test(firstWord) && isModUp){
+  if (/^!!timer/i.test(firstWord) && isModUp && !cooldown[channel]['timer']){
+    setCooldown(channel, 'timer', 30000);
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseInt(query);
     if (timeMin === NaN || timeMin <= 0){
@@ -69,10 +101,14 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //codewords
-  if (/^!!codeword/i.test(firstWord)) CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
+  if (/^!!codeword/i.test(firstWord) && !cooldown[channel]['codeword']) {
+    setCooldown(channel, 'codeword', 2000);
+    CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
+  }
   
   //morse code
-  if (/^!!morse/i.test(firstWord)){ 
+  if (/^!!morse/i.test(firstWord) && !cooldown[channel]['morse']){ 
+    setCooldown(channel, 'morse', 10000);
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
