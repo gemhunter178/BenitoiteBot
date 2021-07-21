@@ -1,6 +1,6 @@
 import tmi from 'tmi.js'
 import fs from 'fs'
-import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, BOT_MASTER } from './constants'
+import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants'
 import { files } from './filePaths'
 import { FISH , FISH_STATS } from './fishCommand'
 import { CODEWORDGAME } from './codewordsGame'
@@ -17,7 +17,6 @@ const client = new tmi.Client({
 
 client.connect();
 
-//words: https://www.randomlists.com/data/words.json
 //setInterval(function(){client.say('[channel]', `[message]`)},[time,ms]);
 
 client.on('message', (channel, user, message, self) => {
@@ -27,7 +26,7 @@ client.on('message', (channel, user, message, self) => {
   let isMod = user.mod || user['user-type'] === 'mod';
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
-  // Ignore echoed messages and ones that do not start with !.
+  // Ignore messages from self.
   if (self) return;
 
   //commands past this must start with !
@@ -38,7 +37,7 @@ client.on('message', (channel, user, message, self) => {
     client.say(channel, `Heya, ` + user['display-name'] + `!`);
   }
   
-  if (message.toLowerCase() === '!!goodbye' && user.username === BOT_MASTER) {
+  if (message.toLowerCase() === '!!goodbye' && user.username === OWNER) {
     client.say(channel, `Alright, see you later!`);
     console.log('bot terminated by user');
     process.exit(0);
@@ -59,16 +58,14 @@ client.on('message', (channel, user, message, self) => {
   if (/^!!timer/i.test(firstWord) && isModUp){
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseInt(query);
-    if (timeMin === NaN || timeMin === 0){
+    if (timeMin === NaN || timeMin <= 0){
       timeMin = 10;
     }
-    let plural = ' minutes!';
-    if (timeMin === 1) plural = ' minute!';
-    client.say(channel, `Timer set for ` + timeMin + plural);
-    console.log('timer set for ' + timeMin + ' minutes from now');
-    setTimeout(function(){client.say(channel, `Timer alert!`)},timeMin * 60000);
-    setTimeout(function(){client.say(channel, `Timer alert!!`)},timeMin * 60000 + 1000);
-    setTimeout(function(){client.say(channel, `Timer alert!!!`)},timeMin * 60000 + 2000);
+    let plural = ' minutes';
+    if (timeMin === 1) plural = ' minute';
+    client.say(channel, `Timer set for ` + timeMin + plural + '!');
+    console.log('timer set for ' + timeMin + plural + ' from now');
+    setTimeout(function(){client.say(channel, `*TIMER END* This timer was set ` + timeMin + plural + ` ago!`)},timeMin * 60000);
   }
   
   //codewords
