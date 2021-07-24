@@ -60,7 +60,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     if(samePlace != CWLength){
       query = oldQuery + ' has ' + samePlace + ' character(s) in the right position and ' + sameLetter + ' other matching letter(s) as the codeword.';
     } else {
-      query = user['display-name'] + ' has found the codeword! - ' + cdewrd[channel];
+      query = user['display-name'] + ' has found the codeword! - [' + cdewrd[channel] + '] ... a new codeword has now been generated.';
       getNewWord(false);
     }
     client.say(channel, query);
