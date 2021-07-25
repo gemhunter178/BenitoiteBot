@@ -36,17 +36,17 @@ for (let i = 0; i < CHANNELS.length; i++){
   if (!cooldown.hasOwnProperty(channel)){
     //also a good list of all commands this currently has
     cooldown[channel] = {
-      hello: [false, 1000],
-      logme: [false, 1000],
-      fish: [false, 5000],
-      fishstats: [false, 15000],
-      timer: [false, 30000],
-      codeword: [false, 2000],
-      morse: [false, 10000]
+      '!!hello': [false, 1000],
+      '!!logme': [false, 1000],
+      '!!fish': [false, 5000],
+      '!!fishstats': [false, 15000],
+      '!!timer': [false, 30000],
+      '!!codeword': [false, 2000],
+      '!!morse': [false, 10000]
     };
   //debug
   //console.log(cooldown);
-  }
+  } 
 }
 
 function saveCooldownFile(data){
@@ -60,9 +60,23 @@ function saveCooldownFile(data){
 //save created config above
 saveCooldownFile(cooldown);
 
+//reset cooldown states in case edge cases arise
+function resetCooldown(channel){
+  for (const command in cooldown[channel]){
+    if(cooldown[channel][command][1] < 0){
+      cooldown[channel][command][0] = true;
+    } else {
+      cooldown[channel][command][0] = false;
+    }
+  }
+  saveCooldownFile(cooldown);
+}
+
 function setCooldown(channel, command){
   cooldown[channel][command][0] = true;
-  setTimeout(function(){cooldown[channel][command] = false;},cooldown[channel][command][1]);
+  if (cooldown[channel][command][1] > 0){
+    setTimeout(function(){cooldown[channel][command][0] = false;},cooldown[channel][command][1]);
+  }
 }
 
 client.connect();
@@ -82,40 +96,115 @@ client.on('message', (channel, user, message, self) => {
 
   //commands past this must start with !
   if (!message.startsWith('!')) return;
-
-  if (message.toLowerCase() === '!!hello' && !cooldown[channel]['hello'][0]) {
+  
+  //default command, sort of a !ping
+  if (message.toLowerCase() === '!!hello' && !cooldown[channel]['!!hello'][0]) {
     // "@user, heya!"
-    setCooldown(channel, 'hello');
+    setCooldown(channel, '!!hello');
     client.say(channel, `Heya, ` + user['display-name'] + `!`);
   }
   
+  //shut off bot (use only when necesssary)
   if (message.toLowerCase() === '!!goodbye' && user.username === OWNER) {
     client.say(channel, `Alright, see you later!`);
     console.log('bot terminated by user');
     process.exit(0);
   }
-
-  if (message.toLowerCase() === '!!logme' && !cooldown[channel]['logme'][0]) {
+  
+  //debugging and such
+  if (message.toLowerCase() === '!!logme' && !cooldown[channel]['!!logme'][0]) {
     //mostly for debug purposes
-    setCooldown(channel, 'logme');
+    setCooldown(channel, '!!logme');
     client.say(channel, user['display-name'] + ` has been logged on console`);
     console.log(user);
     console.log(isModUp);
   }
   
+  //cooldown and command disabling
+  if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp){
+    let query = message.toLowerCase().split(' ');
+    if (query.length < 2) {
+      client.say(channel, `no command found. example: !!cd !!hello 1`);
+    } else if (query.length === 2) {
+      client.say(channel, `please space separate time (in seconds) and the command`);
+    } else {
+      let success = true;
+      let time, command;
+      if (cooldown[channel].hasOwnProperty(query[1])){
+        command = query[1];
+        time = parseFloat(query[2]);
+      } else if (cooldown[channel].hasOwnProperty(query[2])){
+        command = query[2];
+        time = parseFloat(query[1]);
+      } else {
+        success = false;
+        client.say(channel, `could not find command! did you include the prefix?`);
+      }
+      if(success){ 
+        if (time === NaN) {
+          client.say(channel, `could not read time (in seconds please)!`);
+        } else if (time < 0) {
+          client.say(channel, `negative cooldown times are not allowed.`);
+        } else {
+          time  = time.toFixed(3) * 1000;
+          cooldown[channel][command][1] = time;
+          client.say(channel, command + ` cooldown has been set to ` + time/1000 + ` seconds.`);
+          saveCooldownFile(cooldown);
+        }
+      }
+    }
+  }
+  
+  if (firstWord.toLowerCase() === '!!disable' && isModUp){
+    let query = message.toLowerCase().split(' ');
+    if (query.length < 2) {
+      client.say(channel, `no command found. example: !!disable !!hello`);
+    } else {
+      if (cooldown[channel].hasOwnProperty(query[1])){
+        cooldown[channel][query[1]][0] = true;
+        cooldown[channel][query[1]][1] = -1;
+        client.say(channel, query[1] + ` disabled.`);
+        saveCooldownFile(cooldown);
+      } else {
+        client.say(channel, `could not find command! did you include the prefix?`);
+      }
+    }
+  }
+  
+  if (firstWord.toLowerCase() === '!!enable' && isModUp){
+    let query = message.toLowerCase().split(' ');
+    if (query.length < 2) {
+      client.say(channel, `no command found. example: !!enable !!hello`);
+    } else {
+      if (cooldown[channel].hasOwnProperty(query[1])){
+        cooldown[channel][query[1]][0] = false;
+        cooldown[channel][query[1]][1] = 15000;
+        client.say(channel, query[1] + ` enabled.`);
+        saveCooldownFile(cooldown);
+      } else {
+        client.say(channel, `could not find command! did you include the prefix?`);
+      }
+    }
+  }
+  
+  if ((firstWord.toLowerCase() === '!!resetcd' || firstWord.toLowerCase() === '!!resetcooldown') && isModUp){
+    resetCooldown(channel);
+  }
+  
   //the famous !fish commands
-  if (firstWord.toLowerCase() === '!!fish' && !cooldown[channel]['fish'][0]) { 
-    setCooldown(channel, 'fish'); 
+  if (firstWord.toLowerCase() === '!!fish' && !cooldown[channel]['!!fish'][0]) { 
+    setCooldown(channel, '!!fish'); 
     FISH(files.fishDataFiles, fs, user, channel, client);
   }
   
-  if (firstWord.toLowerCase() === '!!fishstats' && !cooldown[channel]['fishstats'][0]) {
-    setCooldown(channel, 'fishstats');
+  if (firstWord.toLowerCase() === '!!fishstats' && !cooldown[channel]['!!fishstats'][0]) {
+    setCooldown(channel, '!!fishstats');
     FISH_STATS(files.fishDataFiles, fs, user, channel, client);
   }
   
-  if (/^!!timer/i.test(firstWord) && isModUp && !cooldown[channel]['timer'][0]){
-    setCooldown(channel, 'timer');
+  //timer command
+  if (/^!!timer/i.test(firstWord) && isModUp && !cooldown[channel]['!!timer'][0]){
+    setCooldown(channel, '!!timer');
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseInt(query);
     if (timeMin === NaN || timeMin <= 0){
@@ -129,14 +218,14 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //codewords
-  if (/^!!codeword/i.test(firstWord) && !cooldown[channel]['codeword'][0]) {
-    setCooldown(channel, 'codeword');
+  if (/^!!codeword/i.test(firstWord) && !cooldown[channel]['!!codeword'][0]) {
+    setCooldown(channel, '!!codeword');
     CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
   }
   
   //morse code
-  if (/^!!morse/i.test(firstWord) && !cooldown[channel]['morse'][0]){ 
-    setCooldown(channel, 'morse');
+  if (/^!!morse/i.test(firstWord) && !cooldown[channel]['!!morse'][0]){ 
+    setCooldown(channel, '!!morse');
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
