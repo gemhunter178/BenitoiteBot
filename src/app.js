@@ -1,11 +1,13 @@
-import tmi from 'tmi.js'
-import fs from 'fs'
-import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants'
-import { files } from './filePaths'
-import { Cooldown } from './cooldown'
-import { FISH , FISH_STATS } from './fishCommand'
-import { CODEWORDGAME } from './codewordsGame'
-import { MORSE } from './morseDecoder'
+import tmi from 'tmi.js';
+//import { ApiClient } from 'twitch';
+//import { StaticAuthProvider } from 'twitch-auth';
+import fs from 'fs';
+import { CLIENT_ID , BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
+import { files } from './filePaths';
+import { Cooldown } from './cooldown';
+import { FISH , FISH_STATS } from './fishCommand';
+import { CODEWORDGAME } from './codewordsGame';
+import { MORSE } from './morseDecoder';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -16,13 +18,16 @@ const client = new tmi.Client({
   channels: CHANNELS
 });
 
+//const authProvider = new StaticAuthProvider( CLIENT_ID , OAUTH_TOKEN );
+//const apiClient = new ApiClient({ authProvider });
+
 let cooldown;
 //read cooldown file has to be sync before everything else
 try {
   const data = fs.readFileSync(files.cooldown);
   cooldown = JSON.parse(data);
 } catch (err) {
-  console.error(err);
+  console.log('cooldown file not found, generating a new one');
   try {
     fs.writeFileSync(files.cooldown, '{}');
     console.log(files.cooldown + ' has been created');
@@ -98,6 +103,7 @@ client.on('message', (channel, user, message, self) => {
   if ((firstWord.toLowerCase() === '!!resetcd' || firstWord.toLowerCase() === '!!resetcooldown') && isModUp){
     Cooldown.resetCooldown(channel, cooldown);
     Cooldown.saveCooldownFile(cooldown, fs, files);
+    client.say(channel, `cooldown file has been reset`);
   }
   
   //the famous !fish commands

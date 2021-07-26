@@ -82,7 +82,7 @@ export const Cooldown = {
     }
   },
   
-  //enable ordisable a command based on a bool 'enable'
+  //enable or disable a command based on a bool 'enable'
   enable: function (channel, message, client, cooldown, fs, files, enable) {
     let newStat = false;
     let newTime = 15000;

@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "esm": "^3.2.25",
-    "tmi.js": "^1.8.3"
+    "tmi.js": "^1.8.3",
+    "twitch": "^4.6.4",
+    "twitch-auth": "^4.6.4"
   }
 }

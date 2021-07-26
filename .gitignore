@@ -16,3 +16,4 @@ cassettes
 src/constants.js
 .vs
 data/*.json
+package-lock.json
