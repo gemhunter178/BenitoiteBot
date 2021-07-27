@@ -85,7 +85,7 @@ export const Cooldown = {
   //enable or disable a command based on a bool 'enable'
   enable: function (channel, message, client, cooldown, fs, files, enable) {
     let newStat = false;
-    let newTime = 15000;
+    let newTime = 1;
     let updateMessage = ' enabled.';
     if (!enable) {
       newStat = true;
@@ -98,8 +98,15 @@ export const Cooldown = {
     } else {
       if (cooldown[channel].hasOwnProperty(query[1])){
         cooldown[channel][query[1]][0] = newStat;
-        cooldown[channel][query[1]][1] = newTime;
+        cooldown[channel][query[1]][1] = newTime * Math.abs(cooldown[channel][query[1]][1]);
         client.say(channel, query[1] + updateMessage);
+        this.saveCooldownFile(cooldown, fs, files);
+      } else if (query[1] === 'all') {
+        for (const command in cooldown[channel]) {
+          cooldown[channel][command][0] = newStat;
+          cooldown[channel][command][1] = newTime * Math.abs(cooldown[channel][command][1]);
+        }
+        client.say(channel, `all commands` + updateMessage);
         this.saveCooldownFile(cooldown, fs, files);
       } else {
         client.say(channel, `could not find command! did you include the prefix?`);
