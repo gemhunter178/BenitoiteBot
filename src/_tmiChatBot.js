@@ -1,6 +1,4 @@
 import tmi from 'tmi.js';
-//import { ApiClient } from 'twitch';
-//import { StaticAuthProvider } from 'twitch-auth';
 import fs from 'fs';
 import { CLIENT_ID , BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
 import { files } from './filePaths';
@@ -17,9 +15,6 @@ const client = new tmi.Client({
   },
   channels: CHANNELS
 });
-
-//const authProvider = new StaticAuthProvider( CLIENT_ID , OAUTH_TOKEN );
-//const apiClient = new ApiClient({ authProvider });
 
 let cooldown;
 //read cooldown file has to be sync before everything else
