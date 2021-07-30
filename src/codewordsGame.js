@@ -1,23 +1,15 @@
+import { gFunc } from './_generalFunctions';
 export function CODEWORDGAME(file, fs, user, channel, client, message) {
   
   function findNewWordHttps() {
     const promise = new Promise ((resolve,reject) => {
-      let https = require('https');
-      https.get('https://www.randomlists.com/data/words.json', (response) => {
-        let str = '';
-        response.on('data', function (appendStr) {
-          str += appendStr;
-        });
-        
-        response.on('end', function () {
-          let getWords = JSON.parse(str).data;
-          //console.log(getWords);
-          resolve(getWords[Math.floor(Math.random()*getWords.length)]);
-        });
-      }).on("error", (err) => {
-        console.log(err.message);
-        reject(err);
-      });
+      let newData = gFunc.readHttps('https://www.randomlists.com/data/words.json');
+      newData.then( result => {
+        result = JSON.parse(result).data;
+        resolve(result[Math.floor(Math.random()*result.length)]);
+      }, error => {
+        reject(error);
+      })
     });
     return promise;
   }

@@ -1,5 +1,6 @@
 import tmi from 'tmi.js';
 import fs from 'fs';
+import { gFunc } from './_generalFunctions';
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
 import { files } from './filePaths';
 import { Cooldown } from './cooldown';
@@ -45,7 +46,7 @@ for (const channel in CHANNELS) {
 Cooldown.saveCooldownFile(cooldown, fs, files);
 
 //check if trivia categories needs updating
-trivia.getCat(fs, files);
+trivia.getCat(fs, files, '');
 
 client.connect();
 
