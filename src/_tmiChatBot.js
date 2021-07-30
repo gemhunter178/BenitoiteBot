@@ -46,7 +46,7 @@ for (const channel in CHANNELS) {
 Cooldown.saveCooldownFile(cooldown, fs, files);
 
 //check if trivia categories needs updating
-trivia.getCat(fs, files, '');
+trivia.getCat(fs, files.triviaCatFile, '');
 
 client.connect();
 

@@ -57,5 +57,10 @@ export const gFunc = {
       });
     });
     return promise;
+  },
+  
+  //returns the closest item match to input in an object
+  closestmatch: function (inputWord, inputObject) {
+    
   }
 }

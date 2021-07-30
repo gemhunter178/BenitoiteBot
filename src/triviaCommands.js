@@ -1,7 +1,6 @@
 import { gFunc } from './_generalFunctions';
 export const trivia = {
-  
-  getCat: function (fs, files, force) {
+  getCat: function (fs, file, force) {
     // fetch current time
     const current_time = Date.now();
     // check if forcing a update
@@ -12,7 +11,7 @@ export const trivia = {
       if (force != null) {
         resolve(true);
       }
-      fs.readFile(files.triviaCatFile, 'utf8', (err, data) => {
+      fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
           // if no file exists
           console.log('no trivia category file found, creating a new one');
@@ -36,7 +35,7 @@ export const trivia = {
           result = JSON.parse(result);
           result.retrivalTime = current_time;
           result = JSON.stringify(result);
-          gFunc.writeFilePromise(fs, files.triviaCatFile, result).then(resultWrite => {
+          gFunc.writeFilePromise(fs, file, result).then(resultWrite => {
             console.log(resultWrite); 
           }, errorWrite => {
             console.log(errorWrite)
@@ -50,5 +49,9 @@ export const trivia = {
     }, error => {
       console.log(error);
     });
+  },
+  
+  start: function (fs, channel, file){
+    
   }
 }
