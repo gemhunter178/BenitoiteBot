@@ -1,11 +1,12 @@
 import tmi from 'tmi.js';
 import fs from 'fs';
-import { CLIENT_ID , BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
+import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
 import { files } from './filePaths';
 import { Cooldown } from './cooldown';
 import { FISH , FISH_STATS } from './fishCommand';
 import { CODEWORDGAME } from './codewordsGame';
 import { MORSE } from './morseDecoder';
+import { trivia } from './triviaCommands';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -17,7 +18,7 @@ const client = new tmi.Client({
 });
 
 let cooldown;
-//read cooldown file has to be sync before everything else
+// read cooldown file has to be sync before everything else
 try {
   const data = fs.readFileSync(files.cooldown);
   cooldown = JSON.parse(data);
@@ -32,57 +33,60 @@ try {
   }
 }
 
-//initialize values for new channels
+// initialize values for new channels
 Cooldown.init_new(cooldown, CHANNELS);
 
-//reset cooldown states in case edge cases arise
+// reset cooldown states in case edge cases arise
 for (const channel in CHANNELS) {
   Cooldown.resetCooldown(channel, cooldown);
 }
 
-//save created config above
+// save created config above
 Cooldown.saveCooldownFile(cooldown, fs, files);
+
+//check if trivia categories needs updating
+trivia.getCat(fs, files);
 
 client.connect();
 
 client.on('message', (channel, user, message, self) => {
   
-  //messages that need to match only the first word
+  // messages that need to match only the first word
   let firstWord = message.split(' ')[0];
-  //mod only stuff
+  // mod only stuff
   let isMod = user.mod || user['user-type'] === 'mod';
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
   // Ignore messages from self.
   if (self) return;
 
-  //commands past this must start with !
+  // commands past this must start with !
   if (!message.startsWith('!')) return;
   
-  //default command, sort of a !ping
+  // default command, sort of a !ping
   if (message.toLowerCase() === '!!hello' && !cooldown[channel]['!!hello'][0]) {
     // "@user, heya!"
     Cooldown.setCooldown(channel, '!!hello', cooldown);
     client.say(channel, `Heya, ` + user['display-name'] + `!`);
   }
   
-  //shut off bot (use only when necesssary)
+  // shut off bot (use only when necesssary)
   if (message.toLowerCase() === '!!goodbye' && user.username === OWNER) {
     client.say(channel, `Alright, see you later!`);
     console.log('bot terminated by user');
     process.exit(0);
   }
   
-  //debugging and such
+  // debugging and such
   if (message.toLowerCase() === '!!logme' && !cooldown[channel]['!!logme'][0]) {
-    //mostly for debug purposes
+    // mostly for debug purposes
     Cooldown.setCooldown(channel, '!!logme', cooldown);
     client.say(channel, user['display-name'] + ` has been logged on console`);
     console.log(user);
     console.log(isModUp);
   }
   
-  //cooldown and command disabling
+  // cooldown and command disabling
   if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp){
     Cooldown.changeCooldown(channel, message, client, cooldown, fs, files);
   }
@@ -101,7 +105,7 @@ client.on('message', (channel, user, message, self) => {
     client.say(channel, `cooldown file has been reset`);
   }
   
-  //the famous !fish commands
+  // the famous !fish commands
   if (firstWord.toLowerCase() === '!!fish' && !cooldown[channel]['!!fish'][0]) { 
     Cooldown.setCooldown(channel, '!!fish', cooldown); 
     FISH(files.fishDataFiles, fs, user, channel, client);
@@ -112,7 +116,7 @@ client.on('message', (channel, user, message, self) => {
     FISH_STATS(files.fishDataFiles, fs, user, channel, client);
   }
   
-  //timer command
+  // timer command
   if (/^!!timer/i.test(firstWord) && isModUp && !cooldown[channel]['!!timer'][0]){
     Cooldown.setCooldown(channel, '!!timer', cooldown);
     let query = message.replace(/^!+timer[\s]*/,'');
@@ -129,16 +133,17 @@ client.on('message', (channel, user, message, self) => {
     setTimeout(function(){client.say(channel, `*TIMER END* This timer was set ` + timeMin + plural + ` ago!`)},timeMin * 60000);
   }
   
-  //codewords
+  // codewords
   if (/^!!codeword/i.test(firstWord) && !cooldown[channel]['!!codeword'][0]) {
     Cooldown.setCooldown(channel, '!!codeword', cooldown);
     CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
   }
   
-  //morse code
+  // morse code
   if (/^!!morse/i.test(firstWord) && !cooldown[channel]['!!morse'][0]){ 
     Cooldown.setCooldown(channel, '!!morse', cooldown);
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
+  // new trivia command imcomming? https://opentdb.com/api_config.php
 });

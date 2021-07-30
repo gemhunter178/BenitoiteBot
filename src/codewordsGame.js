@@ -18,7 +18,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
         console.log(err.message);
         reject(err);
       });
-    })
+    });
     return promise;
   }
   
