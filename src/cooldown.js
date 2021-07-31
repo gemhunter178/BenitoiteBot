@@ -105,8 +105,11 @@ export const Cooldown = {
           client.say(channel, `negative cooldown times are not allowed.`);
         } else {
           time  = time.toFixed(3) * 1000;
+          if (cooldown[channel][command][1] < 0) {
+            time = -time;
+          }
           cooldown[channel][command][1] = time;
-          client.say(channel, command + ` cooldown has been set to ` + time/1000 + ` seconds.`);
+          client.say(channel, command + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
           this.saveCooldownFile(cooldown, fs, files);
         }
       }
