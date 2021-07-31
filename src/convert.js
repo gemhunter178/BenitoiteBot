@@ -289,19 +289,19 @@ export function CONVERT(channel, client, text) {
       }
     };
   })();
-  
+
   // returns all available units for a certain category
-  function dispOptions(measure_type) {
+  function dispOptions (measureType) {
     let msgAdd = '';
-    for (const attribute in measure_type) {
-      if(typeof measure_type[attribute] !== 'string'){
+    for (const attribute in measureType) {
+      if (typeof measureType[attribute] !== 'string') {
         msgAdd += (attribute + ', ');
       }
     }
     msgAdd = msgAdd.substr(0, msgAdd.length - 2);
     return msgAdd;
   }
-  
+
   if (helpTrg !== 0) {
     /* error handling, basically */
     switch (helpTrg) {
@@ -345,7 +345,7 @@ export function CONVERT(channel, client, text) {
         break;
 
       default:
-        msg = '!convert by Gem. Input format: "[number] [inputUnit] [outputUnit]" or "help [unittype]". ' + accptUnits;
+        msg = 'convert function by Gem. Input format: "[number] [inputUnit] [outputUnit]" or "help [unittype]" -> ' + dispOptions(conversions);
         break;
     }
   } else {
@@ -369,12 +369,11 @@ export function CONVERT(channel, client, text) {
         break;
       }
     }
-    
+
     if (!calc) {
       // assuming the second unit is the issue
       for (const attribute in conversions) {
         if (conversions[attribute].hasOwnProperty(unit1)) {
-          unit2 = unit2.toLowerCase();
           unit2 = gFunc.closestObjectAttribute(unit2, conversions[attribute])[0][1];
           if (typeof (conversions[attribute][unit1]) === 'string') { unit1 = conversions[attribute][unit1]; }
           if (typeof (conversions[attribute][unit2]) === 'string') { unit2 = conversions[attribute][unit2]; }
@@ -391,7 +390,7 @@ export function CONVERT(channel, client, text) {
         }
       }
     }
-    
+
     if (!calc) {
       msg = 'Unknown unit \'' + unit1 + '\' ...did you check your capitalizations?';
     }

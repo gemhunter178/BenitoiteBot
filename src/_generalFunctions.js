@@ -60,15 +60,15 @@ export const gFunc = {
   },
   
   // a 2 matrix row implementation of Levenshtein
-  Levenshtein: function(string1, string2) {
-    let len = string2.length;
+  Levenshtein: function (string1, string2) {
+    const len = string2.length;
     let test1 = Array(len + 1).fill(null);
-    //initialize row 0
+    // initialize row 0
     for (let i = 0; i <= len; i++) {
       test1[i] = i;
     }
     for (let i = 0; i < string1.length; i++) {
-    	let test2 = Array(len + 1).fill(null);
+    	const test2 = Array(len + 1).fill(null);
       test2[0] = i + 1;
       for (let j = 0; j < len; j++) {
         const change = string1[i] === string2[j] ? 0 : 1;
@@ -80,11 +80,12 @@ export const gFunc = {
   },
       
   // returns an array of weighted minimum distances and their associated attribute
-  closestObjectAttribute: function(inputString, inputObject) {
+  // will do a case insensitive search (utilizing .toLowerCase())
+  closestObjectAttribute: function (inputString, inputObject) {
     let maxMatch = [];
     for (const attribute in inputObject) {
-      let lDist = this.Levenshtein(inputString, attribute);
-      //weighting for longer attributes
+      let lDist = this.Levenshtein(inputString.toLowerCase(), attribute.toLowerCase());
+      // weighting for longer attributes
       if (attribute.length > inputString.length) {
         lDist = lDist - Math.floor((attribute.length - inputString.length) * 0.75);
       }
