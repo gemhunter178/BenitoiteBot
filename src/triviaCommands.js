@@ -1,4 +1,5 @@
 import { gFunc } from './_generalFunctions';
+// new trivia commands??? https://opentdb.com/api_config.php
 export const trivia = {
   getCat: function (fs, file, force) {
     // fetch current time
@@ -33,9 +34,15 @@ export const trivia = {
         let newData = gFunc.readHttps('https://opentdb.com/api_category.php');
         newData.then( result => {
           result = JSON.parse(result);
-          result.retrivalTime = current_time;
-          result = JSON.stringify(result);
-          gFunc.writeFilePromise(fs, file, result).then(resultWrite => {
+          //reformatting file to be easier to search through later
+          let formatCategories = {trivia_categories: {}};
+          formatCategories.retrivalTime = current_time;
+          for (let i = 0; i < result.trivia_categories.length; i++){
+            result.trivia_categories[i].name = result.trivia_categories[i].name.replace(/^Entertainment:\s|^Science:\s/, '').replace(/\s*&\s*/g,' and ').toLowerCase();
+            formatCategories.trivia_categories[result.trivia_categories[i].name] = result.trivia_categories[i].id;
+          }
+          formatCategories = JSON.stringify(formatCategories);
+          gFunc.writeFilePromise(fs, file, formatCategories).then(resultWrite => {
             console.log(resultWrite); 
           }, errorWrite => {
             console.log(errorWrite)

@@ -31,7 +31,7 @@ export const gFunc = {
     return promise;
   },
   
-  //returns a promise with the data in the file
+  // returns a promise with the data in the file
   readFilePromise: function (fs, fileName, createNew) {
     let promise = new Promise ((resolve, reject) => {
       fs.readFile(fileName, 'utf8', (err, data) => {
@@ -51,7 +51,7 @@ export const gFunc = {
             reject(err);
           }
         } else {
-          //on successful read file
+          // on successful read file
           resolve(data);
         }
       });
@@ -59,8 +59,47 @@ export const gFunc = {
     return promise;
   },
   
-  //returns the closest item match to input in an object
-  closestmatch: function (inputWord, inputObject) {
-    
+  // a 2 matrix row implementation of Levenshtein
+  Levenshtein: function(string1, string2) {
+    let len = string2.length;
+    let test1 = Array(len + 1).fill(null);
+    //initialize row 0
+    for (let i = 0; i <= len; i++) {
+      test1[i] = i;
+    }
+    for (let i = 0; i < string1.length; i++) {
+    	let test2 = Array(len + 1).fill(null);
+      test2[0] = i + 1;
+      for (let j = 0; j < len; j++) {
+        const change = string1[i] === string2[j] ? 0 : 1;
+        test2[j + 1] = Math.min(test1[j + 1] + 1, test2[j] + 1, test1[j] + change);
+      }
+      test1 = test2;
+    }
+    return test1[len];
+  },
+      
+  // returns an array of weighted minimum distances and their associated attribute
+  closestObjectAttribute: function(inputString, inputObject) {
+    let maxMatch = [];
+    for (const attribute in inputObject) {
+      let lDist = this.Levenshtein(inputString, attribute);
+      //weighting for longer attributes
+      if (attribute.length > inputString.length) {
+        lDist = lDist - Math.floor((attribute.length - inputString.length) * 0.75);
+      }
+      if (maxMatch.length === 0) {
+        maxMatch = [
+          [lDist, attribute]
+        ];
+      } else if (lDist < maxMatch[0][0]) {
+        maxMatch = [
+          [lDist, attribute]
+        ];
+      } else if (lDist === maxMatch[0][0]) {
+        maxMatch.push([lDist, attribute]);
+      }
+    }
+    return maxMatch;
   }
 }

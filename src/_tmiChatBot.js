@@ -146,5 +146,5 @@ client.on('message', (channel, user, message, self) => {
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
-  // new trivia command imcomming? https://opentdb.com/api_config.php
+  
 });
