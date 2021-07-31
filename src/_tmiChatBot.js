@@ -7,7 +7,8 @@ import { Cooldown } from './cooldown';
 import { FISH , FISH_STATS } from './fishCommand';
 import { CODEWORDGAME } from './codewordsGame';
 import { MORSE } from './morseDecoder';
-import { trivia } from './triviaCommands';
+import { Trivia } from './triviaCommands';
+import { CONVERT } from './convert';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -46,7 +47,7 @@ for (const channel in CHANNELS) {
 Cooldown.saveCooldownFile(cooldown, fs, files);
 
 //check if trivia categories needs updating
-trivia.getCat(fs, files.triviaCatFile, '');
+Trivia.getCat(fs, files.triviaCatFile, '');
 
 client.connect();
 
@@ -145,6 +146,13 @@ client.on('message', (channel, user, message, self) => {
     Cooldown.setCooldown(channel, '!!morse', cooldown);
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
+  }
+  
+  //convert
+  if (/^!!convert/i.test(firstWord) && !cooldown[channel]['!!convert'][0]){ 
+    Cooldown.setCooldown(channel, '!!convert', cooldown);
+    let query = message.replace(/^!+convert[\s]*/,'');
+    CONVERT(channel, client, query);
   }
   
 });

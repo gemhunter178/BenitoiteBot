@@ -1,6 +1,6 @@
 export const Cooldown = {
   // version number
-  version: '1.1.0',
+  version: '1.1.1',
   
   // default cooldowns
   // also a good list of all commands this currently has
@@ -11,7 +11,8 @@ export const Cooldown = {
     '!!fishstats': [false, 15000],
     '!!timer': [false, 30000],
     '!!codeword': [false, 2000],
-    '!!morse': [false, 10000]
+    '!!morse': [false, 10000],
+    '!!convert': [false, 10000]
   },
   
   // used to initialize a new channel

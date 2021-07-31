@@ -1,6 +1,6 @@
 import { gFunc } from './_generalFunctions';
 // new trivia commands??? https://opentdb.com/api_config.php
-export const trivia = {
+export const Trivia = {
   getCat: function (fs, file, force) {
     // fetch current time
     const current_time = Date.now();
@@ -10,6 +10,7 @@ export const trivia = {
     // resolves a bool of whether the file should be updated, cooldown of a day.
     let checkFile = new Promise ((resolve, reject) => {
       if (force != null) {
+        console.log('forcing trivia category update');
         resolve(true);
       }
       fs.readFile(file, 'utf8', (err, data) => {
@@ -21,7 +22,8 @@ export const trivia = {
         } else {
           //on successful read file
           data = JSON.parse(data);
-          if (current_time - data.retrivalTime > 86400) {
+          if (current_time - data.retrivalTime > 86400000) {
+            console.log('category file is more than a day old, refreshing.');
             resolve(true);
           } else {
             resolve(false);
@@ -36,11 +38,11 @@ export const trivia = {
           result = JSON.parse(result);
           //reformatting file to be easier to search through later
           let formatCategories = {trivia_categories: {}};
-          formatCategories.retrivalTime = current_time;
           for (let i = 0; i < result.trivia_categories.length; i++){
             result.trivia_categories[i].name = result.trivia_categories[i].name.replace(/^Entertainment:\s|^Science:\s/, '').replace(/\s*&\s*/g,' and ').toLowerCase();
             formatCategories.trivia_categories[result.trivia_categories[i].name] = result.trivia_categories[i].id;
           }
+          formatCategories.retrivalTime = current_time;
           formatCategories = JSON.stringify(formatCategories);
           gFunc.writeFilePromise(fs, file, formatCategories).then(resultWrite => {
             console.log(resultWrite); 
