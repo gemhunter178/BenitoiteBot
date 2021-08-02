@@ -42,6 +42,7 @@ export const Trivia = {
             result.trivia_categories[i].name = result.trivia_categories[i].name.replace(/^Entertainment:\s|^Science:\s/, '').replace(/\s*&\s*/g,' and ').toLowerCase();
             formatCategories.trivia_categories[result.trivia_categories[i].name] = result.trivia_categories[i].id;
           }
+          formatCategories.trivia_categories.any = -1;
           formatCategories.retrivalTime = current_time;
           formatCategories = JSON.stringify(formatCategories);
           gFunc.writeFilePromise(fs, file, formatCategories).then(resultWrite => {
@@ -60,7 +61,7 @@ export const Trivia = {
     });
   },
 
-  //used to initialize the trivia file. note 'channels' is the list of all channels the bot is in
+  // used to initialize the trivia file. note 'channels' is the list of all channels the bot is in
   initialize: function (fs, channels, file){
     let triviaData;
     gFunc.readFilePromise(fs, file, true).then(data => {
@@ -68,7 +69,7 @@ export const Trivia = {
       for (let i = 0; i < channels.length; i++) {
         if (!triviaData.hasOwnProperty(channels[i])){
           triviaData[channels[i]] = {
-            //-1 will be used for 'any'
+            // -1 will be used for 'any'
             category: -1,
             difficulty: -1,
             type: -1
@@ -93,7 +94,45 @@ export const Trivia = {
     
   },
 
-  chooseCat: function (fs, channel, file){
-    
+  // to choose a trivia category
+  chooseCat: function (fs, channel, dataFile, catFile, client, message){
+    gFunc.readFilePromise(fs, catFile, false).then(data => {
+      let triviaCat = JSON.parse(data);
+      gFunc.readFilePromise(fs, dataFile, false).then(data => {
+        let triviaData = JSON.parse(data);
+        let writeFile = false;
+        if (triviaCat.trivia_categories.hasOwnProperty(message)){
+          writeFile = true;
+        } else {
+          message = gFunc.closestObjectAttribute(message, triviaCat.trivia_categories);
+          if (message.length !== 1){
+            let potentialCats = '';
+            // potential overkill for formatting
+            for (let i = 0; i < message.length; i++) {
+              potentialCats += ('\'' + message[i][1] + '\'');
+              if (i < message.length - 2){
+                potentialCats += ', ';
+              } else if (i === message.length - 2) {
+                potentialCats += ', or ';
+              }
+            }
+            client.say(channel, `unsure which category... did you mean ` + potentialCats + '?');
+          } else {
+            message = message[0][1];
+            writeFile = true;
+          }
+        }
+        if(writeFile){
+          triviaData[channel].category = triviaCat.trivia_categories[message];
+          triviaData = JSON.stringify(triviaData);
+          gFunc.writeFilePromise(fs, dataFile, triviaData);
+          client.say(channel, `trivia category changed to: ` + message);
+        }
+      }, error => {
+        console.log('could not find trivia data file... was it removed?');
+      });
+    }, error => {
+      console.log('could not find trivia category file... was it removed?');
+    });
   }
 }

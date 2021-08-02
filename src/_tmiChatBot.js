@@ -121,7 +121,7 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // timer command
-  if (/^!!timer/i.test(firstWord) && isModUp && !cooldown[channel]['!!timer'][0]){
+  if (/^!!timer\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!timer'][0]){
     Cooldown.setCooldown(channel, '!!timer', cooldown);
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseFloat(query);
@@ -138,23 +138,28 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // codewords
-  if (/^!!codeword/i.test(firstWord) && !cooldown[channel]['!!codeword'][0]) {
+  if (/^!!codeword\b/i.test(firstWord) && !cooldown[channel]['!!codeword'][0]) {
     Cooldown.setCooldown(channel, '!!codeword', cooldown);
     CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
   }
   
   // morse code
-  if (/^!!morse/i.test(firstWord) && !cooldown[channel]['!!morse'][0]){ 
+  if (/^!!morse\b/i.test(firstWord) && !cooldown[channel]['!!morse'][0]){ 
     Cooldown.setCooldown(channel, '!!morse', cooldown);
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
   
   //convert
-  if (/^!!convert/i.test(firstWord) && !cooldown[channel]['!!convert'][0]){ 
+  if (/^!!convert\b/i.test(firstWord) && !cooldown[channel]['!!convert'][0]){ 
     Cooldown.setCooldown(channel, '!!convert', cooldown);
     let query = message.replace(/^!+convert[\s]*/,'');
     CONVERT(channel, client, query);
   }
   
+  //trivia commands
+  if (/^!!trivia\b/i.test(firstWord)){ 
+    let query = message.replace(/^!+trivia[\s]*/,'');
+    Trivia.chooseCat(fs, channel, files.triviaData, files.triviaCatFile, client, query);
+  }
 });
