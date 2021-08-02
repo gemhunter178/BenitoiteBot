@@ -39,8 +39,8 @@ try {
 Cooldown.init_new(cooldown, CHANNELS);
 
 // reset cooldown states in case edge cases arise
-for (const channel in CHANNELS) {
-  Cooldown.resetCooldown(channel, cooldown);
+for (let i = 0; i < CHANNELS.length; i++) {
+  Cooldown.resetCooldown(CHANNELS[i], cooldown);
 }
 
 // save created config above
@@ -48,6 +48,8 @@ Cooldown.saveCooldownFile(cooldown, fs, files);
 
 //check if trivia categories needs updating
 Trivia.getCat(fs, files.triviaCatFile, '');
+//initialize trivia files
+Trivia.initialize(fs, CHANNELS, files.triviaData);
 
 client.connect();
 

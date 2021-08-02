@@ -59,8 +59,41 @@ export const Trivia = {
       console.log(error);
     });
   },
-  
+
+  //used to initialize the trivia file. note 'channels' is the list of all channels the bot is in
+  initialize: function (fs, channels, file){
+    let triviaData;
+    gFunc.readFilePromise(fs, file, true).then(data => {
+      triviaData = JSON.parse(data);
+      for (let i = 0; i < channels.length; i++) {
+        if (!triviaData.hasOwnProperty(channels[i])){
+          triviaData[channels[i]] = {
+            //-1 will be used for 'any'
+            category: -1,
+            difficulty: -1,
+            type: -1
+          };
+        }
+      }
+      return triviaData;
+    }, error => {
+      console.log(error);
+      return 1;
+    }).then(result => {
+      if(result === 1){
+        return;
+      } else {
+        result = JSON.stringify(result);
+        gFunc.writeFilePromise(fs, file, result);
+      }
+    });
+  },
+
   start: function (fs, channel, file){
+    
+  },
+
+  chooseCat: function (fs, channel, file){
     
   }
 }

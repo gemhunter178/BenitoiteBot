@@ -43,7 +43,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
       for (let j = 0; j < CWLength; j++) {
         if (query[i] === compareCW[j]) {
           sameLetter++;
-          console.log('matched ' + compareCW[j]);
+          // console.log('matched ' + compareCW[j]);
           compareCW[j] = '__';
           break;
         }
