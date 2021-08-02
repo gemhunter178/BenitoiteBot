@@ -129,10 +129,10 @@ export const Trivia = {
           client.say(channel, `trivia category changed to: ` + message);
         }
       }, error => {
-        console.log('could not find trivia data file... was it removed?');
+        client.say(channel, 'could not find trivia data file... was it removed?');
       });
     }, error => {
-      console.log('could not find trivia category file... was it removed?');
+      client.say(channel, 'could not find trivia category file... was it removed?');
     });
   }
 }

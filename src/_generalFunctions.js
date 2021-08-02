@@ -102,5 +102,57 @@ export const gFunc = {
       }
     }
     return maxMatch;
+  },
+  
+  // attempts to parse a string to ms
+  // returns an array where index 0 is the interpretted time in ms and additional values are unknown units
+  stringToMsec: function (inputString) {
+    // longer matches have to be handled first (ms vs s)
+    inputString = inputString.replace(/\s*m[il]*sec(ond)*s*/ig, 'ms');
+    inputString = inputString.replace(/\s*sec(ond)*s*/ig, 's');
+    inputString = inputString.replace(/\s*min(ute)*s*/ig, 'm');
+    inputString = inputString.replace(/\s*h(ou)*rs*/ig, 'h');
+    inputString = inputString.replace(/\s*d(ay)*s*/ig, 'd');
+    inputString = inputString.replace(/\s*w(ee)*k*s*/ig, 'w');
+    // non-leap years
+    inputString = inputString.replace(/\s*y(ea)*rs*/ig, 'y');
+    // will be rounded to = 30 days
+    inputString = inputString.replace(/\s*mo(nth)*s*/ig, 'mo');
+    while(inputString.search(/\d\s\D/) !== -1) {
+      const loc = inputString.search(/\d\s/);
+      inputString = inputString.substr(0, loc + 1) + inputString.substr(loc + 2);
+    }
+    inputString = inputString.split(' ');
+    let returnArray = [0];
+    let units = {
+      ms: 1,
+      s: 1000,
+      m: 60000,
+      h: 3600000,
+      d: 86400000,
+      w: 604800000,
+      mo: 2592000000,
+      y: 31536000000    
+    };
+    for (let i = 0; i < inputString.length; i++) {
+      const unit = inputString[i].replace(/[^a-z]/ig,'');
+      if (units.hasOwnProperty(unit)){
+        const val = parseFloat(inputString[i]);
+        if (isNaN(val)) {
+          returnArray.push('[no value]:' + unit);
+        } else {
+          returnArray[0] += parseInt((val * units[unit]));
+        }
+      } else if (unit.length === 0){
+        // default is seconds
+        const val = parseFloat(inputString[i]);
+        if (!isNaN(val)) {
+          returnArray[0] += parseInt((val * 1000));
+        }
+      } else {
+        returnArray.push(unit);
+      }
+    }
+    return returnArray;
   }
 }
