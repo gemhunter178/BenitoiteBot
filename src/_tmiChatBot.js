@@ -20,6 +20,8 @@ const client = new tmi.Client({
 });
 
 let cooldown;
+// for privacy reasons, saved chats aren't stored in any file
+let saveChats = {};
 // read cooldown file has to be sync before everything else
 try {
   const data = fs.readFileSync(files.cooldown);
@@ -158,8 +160,8 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //trivia commands
-  if (/^!!trivia\b/i.test(firstWord)){ 
+  if (/^!!trivia\b/i.test(firstWord) && !cooldown[channel]['!!trivia'][0]){ 
     let query = message.replace(/^!+trivia[\s]*/,'');
-    Trivia.chooseCat(fs, channel, files.triviaData, files.triviaCatFile, client, query);
+    Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }
 });

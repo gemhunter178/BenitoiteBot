@@ -136,7 +136,7 @@ export const gFunc = {
     };
     for (let i = 0; i < inputString.length; i++) {
       const unit = inputString[i].replace(/[^a-z]/ig,'');
-      if (units.hasOwnProperty(unit)){
+      if (units[unit]){
         const val = parseFloat(inputString[i]);
         if (isNaN(val)) {
           returnArray.push('[no value]:' + unit);

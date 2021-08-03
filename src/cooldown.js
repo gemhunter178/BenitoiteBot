@@ -1,6 +1,6 @@
 export const Cooldown = {
   // version number
-  version: '1.1.1',
+  version: '1.2',
   
   // default cooldowns
   // also a good list of all commands this currently has
@@ -12,7 +12,9 @@ export const Cooldown = {
     '!!timer': [false, 30000],
     '!!codeword': [false, 2000],
     '!!morse': [false, 10000],
-    '!!convert': [false, 10000]
+    '!!convert': [false, 10000],
+    // trivia is meant to be mod-only but can be disabled.
+    '!!trivia': [false, 1]
   },
   
   // used to initialize a new channel
@@ -88,10 +90,10 @@ export const Cooldown = {
     } else {
       let success = true;
       let time, command;
-      if (cooldown[channel].hasOwnProperty(query[1])){
+      if (cooldown[channel][query[1]]){
         command = query[1];
         time = parseFloat(query[2]);
-      } else if (cooldown[channel].hasOwnProperty(query[2])){
+      } else if (cooldown[channel][query[2]]){
         command = query[2];
         time = parseFloat(query[1]);
       } else {
@@ -130,7 +132,7 @@ export const Cooldown = {
     if (query.length < 2) {
       client.say(channel, `no command found. example: !!disable !!hello`);
     } else {
-      if (cooldown[channel].hasOwnProperty(query[1])){
+      if (cooldown[channel][query[1]]){
         cooldown[channel][query[1]][0] = newStat;
         cooldown[channel][query[1]][1] = newTime * Math.abs(cooldown[channel][query[1]][1]);
         client.say(channel, query[1] + updateMessage);
