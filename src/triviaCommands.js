@@ -196,9 +196,17 @@ export const Trivia = {
       switch (result.response_code) {
         case 0:
           // normal functions
+          let startMsg = '';
+          if (triviaData[channel].category === -1) {
+            startMsg += '[' + decodeURIComponent(result.results[0].category) + '] ';
+          }
+          if (triviaData[channel].difficulty === -1) {
+            startMsg += '(' + result.results[0].difficulty + ') ';
+          }
           if (result.results[0].type === 'boolean'){
             // true or false questions
-            client.say(channel, 'True or False: ' + decodeURIComponent(result.results[0].question));
+            startMsg += 'True or False: ' + decodeURIComponent(result.results[0].question);
+            client.say(channel, startMsg);
             setTimeout(function(){
               client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer);
             }, triviaData[channel].time);
@@ -219,7 +227,8 @@ export const Trivia = {
                 addMsg += " | ";
               }
             }
-            client.say(channel, decodeURIComponent(result.results[0].question) + ' ' + addMsg);
+            startMsg += decodeURIComponent(result.results[0].question) + ' ' + addMsg;
+            client.say(channel, startMsg);
             setTimeout(function(){
               client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer));
             }, triviaData[channel].time);
