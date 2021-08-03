@@ -34,7 +34,7 @@ export const Trivia = {
     });
     checkFile.then( result => {
       // result is true if the category file needs to be updated/written
-      if(result){
+      if (result){
         let newData = gFunc.readHttps('https://opentdb.com/api_category.php');
         newData.then( result => {
           result = JSON.parse(result);
@@ -88,7 +88,7 @@ export const Trivia = {
       console.log(error);
       return 1;
     }).then(result => {
-      if(result === 1){
+      if (result === 1){
         return;
       } else {
         result = JSON.stringify(result);
@@ -116,7 +116,7 @@ export const Trivia = {
     }
     message = message.split(' ');
     message[0] = message[0].toLowerCase();
-    if(comList[message[0]]){
+    if (comList[message[0]]){
       // only activates if a case insensitive match is found
       const opt = comList[message[0]];
       message.splice(0,1);
@@ -137,11 +137,11 @@ export const Trivia = {
             break;
 
           case 4:
-            client.say(channel, 'type is not implemented yet');
+            this.changeType(fs, channel, triviaData, client, message);
             break;
 
           case 5:
-            client.say(channel, 'time is not implemented yet');
+            this.changeTime(fs, channel, triviaData, client, message);
             break;
             
           case 6:
@@ -169,8 +169,19 @@ export const Trivia = {
     }
   },
 
-  start: function (fs, channel, file, client, saveChatArray){
-    client.say(channel, 'gem still needs to implement this');
+  start: function (fs, channel, triviaData, client, saveChatArray){
+    let getTriviaURL = 'https://opentdb.com/api.php?amount=1';
+    if (triviaData[channel].category !== -1) {
+      getTriviaURL += '&category=' + triviaData[channel].category;
+    }
+    if (triviaData[channel].difficulty !== -1) {
+      getTriviaURL += '&difficulty=' + triviaData[channel].difficulty;
+    }
+    if (triviaData[channel].type !== -1) {
+      getTriviaURL += '&type=' + triviaData[channel].type;
+    }
+    client.say(channel, getTriviaURL);
+    //gFunc.readHttps(&category=15&difficulty=easy&type=multiple);
   },
 
   // to choose a trivia category
@@ -205,7 +216,7 @@ export const Trivia = {
           writeFile = true;
         }
       }
-      if(writeFile){
+      if (writeFile){
         triviaData[channel].category = triviaCat.trivia_categories[message];
         const saveFile = triviaData.filePath;
         triviaData = JSON.stringify(triviaData);
@@ -251,7 +262,7 @@ export const Trivia = {
         writeFile = true;
       }
     }
-    if(writeFile){
+    if (writeFile){
       triviaData[channel].difficulty = diff[message];
       const saveFile = triviaData.filePath;
       triviaData = JSON.stringify(triviaData);
@@ -260,15 +271,34 @@ export const Trivia = {
     }
   },
   
-  changeType: function(){
-    
+  changeType: function (fs, channel, triviaData, client, message) {
+    const types = {
+      'boolean': 'boolean',
+      truefalse: 'boolean',
+      tf: 'boolean',
+      multiplechoice: 'multiple',
+      choice: 'multiple',
+      any: -1
+    };
+    // user probably would not type these above so direct use of closestObjectAttribute()
+    message = types[gFunc.closestObjectAttribute(message, types)[0][1]];
+    triviaData[channel].type = message;
+    const saveFile = triviaData.filePath;
+    triviaData = JSON.stringify(triviaData);
+    gFunc.writeFilePromise(fs, saveFile, triviaData);
+    client.say(channel, `trivia type changed to: ` + message);
   },
   
-  changeTime: function(){
-    
+  changeTime: function (fs, channel, triviaData, client, message) {
+    const inputTime = gFunc.stringToMsec(message)[0];
+    triviaData[channel].time = inputTime;
+    const saveFile = triviaData.filePath;
+    triviaData = JSON.stringify(triviaData);
+    gFunc.writeFilePromise(fs, saveFile, triviaData);
+    client.say(channel, `trivia answer time changed to: ` + inputTime/1000 + ' seconds');    
   },
   
-  showConfig: function(fs, channel, triviaData, catFile, client){
+  showConfig: function (fs, channel, triviaData, catFile, client){
     // read category file
     gFunc.readFilePromise(fs, catFile, false).then(data => {
       let triviaCat = JSON.parse(data);

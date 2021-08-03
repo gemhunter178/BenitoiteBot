@@ -160,7 +160,7 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //trivia commands
-  if (/^!!trivia\b/i.test(firstWord) && !cooldown[channel]['!!trivia'][0]){ 
+  if (/^!!trivia\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!trivia'][0]){ 
     let query = message.replace(/^!+trivia[\s]*/,'');
     Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }

@@ -107,6 +107,10 @@ export const gFunc = {
   // attempts to parse a string to ms
   // returns an array where index 0 is the interpretted time in ms and additional values are unknown units
   stringToMsec: function (inputString) {
+    if (inputString.length === 0) {
+      // default of 15 s
+      return [15000];
+    }
     // longer matches have to be handled first (ms vs s)
     inputString = inputString.replace(/\s*m[il]*sec(ond)*s*/ig, 'ms');
     inputString = inputString.replace(/\s*sec(ond)*s*/ig, 's');
