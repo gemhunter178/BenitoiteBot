@@ -158,5 +158,14 @@ export const gFunc = {
       }
     }
     return returnArray;
+  },
+
+  // code taken from ashleedawg on stackoverflow.com. It is a version of the Durstenfeld shuffle.
+  // only works on versions that support assigning two variables at once
+  shuffleArray: function (array){
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
   }
 }

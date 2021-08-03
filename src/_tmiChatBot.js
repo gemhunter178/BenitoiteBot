@@ -49,7 +49,7 @@ for (let i = 0; i < CHANNELS.length; i++) {
 Cooldown.saveCooldownFile(cooldown, fs, files);
 
 //check if trivia categories needs updating
-Trivia.getCat(fs, files.triviaCatFile, '');
+Trivia.getCat(fs, files.triviaCatFile, false);
 //initialize trivia files
 Trivia.initialize(fs, CHANNELS, files.triviaData);
 

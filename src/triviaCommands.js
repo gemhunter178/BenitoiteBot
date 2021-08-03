@@ -4,12 +4,10 @@ export const Trivia = {
   getCat: function (fs, file, force) {
     // fetch current time
     const current_time = Date.now();
-    // check if forcing a update
-    force = force.match(/force/i);
     
     // resolves a bool of whether the file should be updated, cooldown of a day.
     let checkFile = new Promise ((resolve, reject) => {
-      if (force != null) {
+      if (force) {
         console.log('forcing trivia category update');
         resolve(true);
       }
@@ -100,7 +98,7 @@ export const Trivia = {
   // command that calls the other commands (use this in the chatbot command)
   useCommand: function (fs, channel, dataFile, catFile, client, message, saveChatArray) {
     if (message.length === 0) {
-      client.say(channel, 'trivia, powered by opentdb.com! options: \'start\', \'category\', \'difficulty\', \'type\', \'time\', \'config\'');
+      client.say(channel, 'trivia, powered by opentdb.com! options: \'explain\', \'start\', \'category\', \'difficulty\', \'type\', \'time\', \'config\'');
       return;
     }
     const comList = {
@@ -112,7 +110,10 @@ export const Trivia = {
       difficulty: 3,
       type: 4,
       time: 5,
-      config: 6
+      config: 6,
+      explain: 7,
+      // semi-secret force update of category file
+      update: 8
     }
     message = message.split(' ');
     message[0] = message[0].toLowerCase();
@@ -147,6 +148,15 @@ export const Trivia = {
           case 6:
             this.showConfig(fs, channel, triviaData, catFile, client);
             break;
+
+          case 7:
+            client.say(channel, 'trivia, powered by opentdb.com! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!');
+            break;
+            
+          case 8:
+            client.say(channel, 'forcing category check/update');
+            this.getCat(fs, catFile, true);
+            break;
         }
       }, error => {
         client.say(channel, 'could not find trivia data file... was it removed?');
@@ -180,8 +190,70 @@ export const Trivia = {
     if (triviaData[channel].type !== -1) {
       getTriviaURL += '&type=' + triviaData[channel].type;
     }
-    client.say(channel, getTriviaURL);
-    //gFunc.readHttps(&category=15&difficulty=easy&type=multiple);
+    getTriviaURL += '&encode=url3986';
+    gFunc.readHttps(getTriviaURL).then( result => {
+      result = JSON.parse(result);
+      switch (result.response_code) {
+        case 0:
+          // normal functions
+          if (result.results[0].type === 'boolean'){
+            // true or false questions
+            client.say(channel, 'True or False: ' + decodeURIComponent(result.results[0].question));
+            setTimeout(function(){
+              client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer);
+            }, triviaData[channel].time);
+          } else {
+            // mulitple choice
+            const ans = result.results[0].incorrect_answers;
+            ans.push(result.results[0].correct_answer);
+            gFunc.shuffleArray(ans);
+            let addMsg = '';
+            const letters = ['A','B','C','D'];
+            let ans_placement;
+            for (let i = 0; i < ans.length; i++){
+              if (ans[i] === result.results[0].correct_answer) {
+                ans_placement = i;
+              }
+              addMsg += '[' + letters[i] + ']: ' + decodeURIComponent(ans[i]);
+              if (i < ans.length - 1) {
+                addMsg += " | ";
+              }
+            }
+            client.say(channel, decodeURIComponent(result.results[0].question) + ' ' + addMsg);
+            setTimeout(function(){
+              client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer));
+            }, triviaData[channel].time);
+          }
+          break;
+
+        case 1:
+          // no results
+          client.say(channel, 'no results :( perhaps parameters are too specific?');
+          break;
+
+        case 2:
+          // invalid parameter
+          client.say(channel, 'invalid parameter entered');
+          break;
+
+        case 3:
+          // token not found
+          client.say(channel, 'trivia token not found');
+          break;
+
+        case 4:
+          // token empty
+          client.say(channel, 'trivia token is empty');
+          break;
+
+        default:
+          client.say(channel, 'unknown error, error code: ' + result.response_code);
+          break;
+      }
+      
+    }, error => {
+      client.say(channel, 'trivia API could not be reached');
+    });
   },
 
   // to choose a trivia category
@@ -286,6 +358,13 @@ export const Trivia = {
     const saveFile = triviaData.filePath;
     triviaData = JSON.stringify(triviaData);
     gFunc.writeFilePromise(fs, saveFile, triviaData);
+    if (message === -1) {
+      message = 'any';
+    } else if (message === 'boolean') {
+      message = 'true or false';
+    } else {
+      message = 'multiple choice';
+    }
     client.say(channel, `trivia type changed to: ` + message);
   },
   
