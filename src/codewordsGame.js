@@ -1,4 +1,5 @@
 import { gFunc } from './_generalFunctions';
+// code for the codewords game
 export function CODEWORDGAME(file, fs, user, channel, client, message) {
   
   function findNewWordHttps() {

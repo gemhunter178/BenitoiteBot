@@ -199,6 +199,8 @@ export function CONVERT(channel, client, text) {
         gram: 'g',
         grams: 'g',
         tons: 'ton',
+        tonne: 'metric_ton',
+        tonnes: 'metric_ton',
         lb: 'lbs',
         pound: 'lbs',
         pounds: 'lbs',

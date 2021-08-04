@@ -1,6 +1,7 @@
+// implements the cooldown functionality
 export const Cooldown = {
   // version number
-  version: '1.2',
+  version: '1.2.1',
   
   // default cooldowns
   // also a good list of all commands this currently has
@@ -13,6 +14,7 @@ export const Cooldown = {
     '!!codeword': [false, 2000],
     '!!morse': [false, 10000],
     '!!convert': [false, 10000],
+    '!!toneindicator': [false, 10000],
     // trivia is meant to be mod-only but can be disabled.
     '!!trivia': [false, 1]
   },

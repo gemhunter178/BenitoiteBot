@@ -96,9 +96,9 @@ export function FISH_STATS(fishDataFile, fs, user, channel, client) {
     let message = "";
     if (fishData.hasOwnProperty(channel) && fishData[channel].hasOwnProperty(YearMonth)){
       fishData = fishData[channel][YearMonth]
-      message = "The !fish records for this month: largest was " + fishData.maxUser + " with a fish of " + fishData.max.toFixed(2) + 'kg! (' + (fishData.max * 2.20462).toFixed(2) + "lbs) and the smallest was " + fishData.minUser + " with a fish of " + fishData.min.toFixed(2) + 'kg! (' + (fishData.min * 2.20462).toFixed(2) + "lbs)";
+      message = "The !!fish records for this month: largest was " + fishData.maxUser + " with a fish of " + fishData.max.toFixed(2) + 'kg! (' + (fishData.max * 2.20462).toFixed(2) + "lbs) and the smallest was " + fishData.minUser + " with a fish of " + fishData.min.toFixed(2) + 'kg! (' + (fishData.min * 2.20462).toFixed(2) + "lbs)";
     } else {
-      message = "The !fish records have not been set this month...";
+      message = "The !!fish records have not been set this month...";
     }
     client.say(channel, message);
   }, error => {

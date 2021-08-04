@@ -9,6 +9,7 @@ import { CODEWORDGAME } from './codewordsGame';
 import { MORSE } from './morseDecoder';
 import { Trivia } from './triviaCommands';
 import { CONVERT } from './convert';
+import { InternetLang } from './ILang';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -157,6 +158,13 @@ client.on('message', (channel, user, message, self) => {
     Cooldown.setCooldown(channel, '!!convert', cooldown);
     let query = message.replace(/^!+convert[\s]*/,'');
     CONVERT(channel, client, query);
+  }
+  
+  //tone indicator search
+  if (/^!!toneindicator\b/i.test(firstWord) && !cooldown[channel]['!!toneindicator'][0]){ 
+    Cooldown.setCooldown(channel, '!!toneindicator', cooldown);
+    let query = message.replace(/^!+toneindicator[\s]*/,'');
+    InternetLang.searchToneInd(channel, client, query);
   }
   
   //trivia commands

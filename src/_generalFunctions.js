@@ -167,5 +167,28 @@ export const gFunc = {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+  },
+
+  // neatly formatting a list with appropriate commas. Returns a formatted string
+  // use true in second parameter to use 'and' instead of 'or'
+  formatPrintOptions: function (array, useAnd) {
+    if (array.length === 0) {
+      return '';
+    } else {
+      let returnString = ''
+      for (let i = 0; i < array.length; i++) {
+        returnString += ('\'' + array[i] + '\'');
+        if (i < array.length - 2){
+          returnString += ', ';
+        } else if (i === array.length - 2) {
+          if (useAnd) {
+            returnString += ', and ';
+          } else {
+            returnString += ', or ';
+          }
+        }
+      }
+      return returnString;
+    }
   }
 }

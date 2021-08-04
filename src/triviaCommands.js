@@ -1,5 +1,6 @@
 import { gFunc } from './_generalFunctions';
-// new trivia commands??? https://opentdb.com/api_config.php
+// powered by https://opentdb.com/api_config.php
+// trivia command object with everything needed to make a working trivia game
 export const Trivia = {
   getCat: function (fs, file, force) {
     // fetch current time
