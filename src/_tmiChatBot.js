@@ -1,15 +1,16 @@
 import tmi from 'tmi.js';
 import fs from 'fs';
 import { gFunc } from './_generalFunctions';
-import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER } from './constants';
+import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants';
 import { files } from './filePaths';
 import { Cooldown } from './cooldown';
 import { FISH , FISH_STATS } from './fishCommand';
 import { CODEWORDGAME } from './codewordsGame';
 import { MORSE } from './morseDecoder';
-import { Trivia } from './triviaCommands';
 import { CONVERT } from './convert';
 import { InternetLang } from './ILang';
+import { wordsApi } from './wordsAPI';
+import { Trivia } from './triviaCommands';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -166,10 +167,21 @@ client.on('message', (channel, user, message, self) => {
     let query = message.replace(/^!+toneindicator[\s]*/,'');
     InternetLang.searchToneInd(channel, client, query);
   }
-  
+
+  // wordsapi command
+  if (/^!!word\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!word'][0]){ 
+    let query = message.replace(/^!+word[\s]*/,'');
+    if(API_KEYS['x-rapidapi-key']){
+      client.say(channel, 'not implemented yet :( ');
+    } else {
+      client.say(channel, '!!words requires an API key for wordsAPI (#notspon) to function');
+    }
+  }
+
   //trivia commands
   if (/^!!trivia\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!trivia'][0]){ 
     let query = message.replace(/^!+trivia[\s]*/,'');
     Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }
+  
 });

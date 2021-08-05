@@ -99,7 +99,7 @@ export const Trivia = {
   // command that calls the other commands (use this in the chatbot command)
   useCommand: function (fs, channel, dataFile, catFile, client, message, saveChatArray) {
     if (message.length === 0) {
-      client.say(channel, 'trivia, powered by opentdb.com! options: \'explain\', \'start\', \'category\', \'difficulty\', \'type\', \'time\', \'config\'');
+      client.say(channel, 'trivia, powered by Open Trivia Database! options: \'explain\', \'start\', \'category\', \'difficulty\', \'type\', \'time\', \'config\'');
       return;
     }
     const comList = {
@@ -151,7 +151,7 @@ export const Trivia = {
             break;
 
           case 7:
-            client.say(channel, 'trivia, powered by opentdb.com! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!');
+            client.say(channel, 'trivia, powered by Open Trivia Database! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!');
             break;
             
           case 8:

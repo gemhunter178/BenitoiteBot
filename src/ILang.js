@@ -2,7 +2,7 @@ import { gFunc } from './_generalFunctions';
 
 // functions related to internet jargon and such
 export const InternetLang = {
-  // tone indicators. source: https://toneindicators.carrd.co/
+  // tone indicators. source: https://toneindicators.carrd.co/ and https://tonetags.carrd.co/
   tone_ind: {
     j: 'joking',
     hj: 'half-joking',
@@ -17,6 +17,7 @@ export const InternetLang = {
     neg: 'negative connotation',
     nc: 'negative connotation',
     p: 'platonic',
+    a: 'alterous',
     r: 'romantic',
     c: 'copypasta',
     l: 'lyrics',
@@ -24,7 +25,7 @@ export const InternetLang = {
     lh: 'light-hearted',
     nm: 'not mad',
     lu: 'a little upset',
-    nbh: 'for when you\'re vagueposting or venting, but it\'s directed at nobody here (none of your followers)',
+    nbh: 'nobody here',
     nsb: 'not subtweeting',
     sx: 'sexual intent',
     x: 'sexual intent',
@@ -39,7 +40,15 @@ export const InternetLang = {
     hyp: 'hyperbole',
     f: 'fake',
     th: 'threat',
-    cb: 'clickbait'
+    cb: 'clickbait',
+    q: 'quote',
+    ot: 'off topic',
+    nbr: 'not being rude',
+    ay: 'at you',
+    nay: 'not at you',
+    nf: 'not forced',
+    ref: 'reference',
+    sarc: 'sarcastic'
   },
   
   // looks through tone_ind above and gives best results
@@ -53,7 +62,7 @@ export const InternetLang = {
       message = gFunc.closestObjectAttribute(message, this.tone_ind);
       if (message.length === 1){
         message = message[0][1];
-        client.say(channel, '[inidcator found]: /' + message + ' means ' + this.tone_ind[message]);
+        client.say(channel, '[closest indicator known]: /' + message + ' means ' + this.tone_ind[message]);
         return;
       } else {
         let indMsg = 'no indicator found, did you mean: ';
