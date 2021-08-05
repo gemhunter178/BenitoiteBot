@@ -16,11 +16,12 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
   }
   
   function testWord(){
+    cdewrd[channel].attempts++;
     let change = false;
     let samePlace = 0;
     let sameLetter = 0;
     let oldQuery = query;
-    const CWLength = cdewrd[channel].length;
+    const CWLength = cdewrd[channel].word.length;
     /* unused since cheesing the game this way isn't actually that helpful
     if (query.length < CWLength){
       query = 'The codeword is ' + CWLength + ' characters long. Please enter a query of that length';
@@ -31,7 +32,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
       change = true;
       oldQuery = query;
     }
-    let compareCW = cdewrd[channel].split('');
+    let compareCW = cdewrd[channel].word.split('');
     query = query.split('');
     for (let i = 0; i < CWLength; i++) {
       if(query[i] === compareCW[i]){
@@ -53,16 +54,19 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     if(samePlace != CWLength){
       query = oldQuery + ' has ' + samePlace + ' character(s) in the right position and ' + sameLetter + ' other matching letter(s) as the codeword.';
     } else {
-      query = user['display-name'] + ' has found the codeword! -> ' + cdewrd[channel] + '! ...a new codeword has now been generated.';
+      query = user['display-name'] + ' has found the codeword! -> ' + cdewrd[channel].word + '! This word took ' + cdewrd[channel].attempts + ' attempts. -> a new codeword has now been generated.';
       getNewWord(false);
     }
     client.say(channel, query);
+    gFunc.writeFilePromise(fs, file, JSON.stringify(cdewrd));
   }
   
   function getNewWord(testing) {
     const getWordPromise = findNewWordHttps();
     getWordPromise.then(result => {
-      cdewrd[channel] = result;
+      cdewrd[channel] = {};
+      cdewrd[channel].word = result;
+      cdewrd[channel].attempts = 0;
       try {
         fs.writeFileSync(file, JSON.stringify(cdewrd));
       } catch (err) {
@@ -99,7 +103,7 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     client.say(channel, `Gem's codeword game! Try to guess the codeword by entering a query. *codeword may contain '-'`);
     return;
   }
-  if (!cdewrd.hasOwnProperty(channel)){
+  if (!cdewrd[channel]){
     getNewWord(true);
   } else {
     testWord();
