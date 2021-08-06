@@ -94,6 +94,19 @@ client.on('message', (channel, user, message, self) => {
     console.log(isModUp);
   }
   
+  // command list
+  if (firstWord.toLowerCase() === '!!commands' && !cooldown[channel]['!!commands'][0]){
+    Cooldown.setCooldown(channel, '!!commands', cooldown);
+    let commandmsg = [];
+    for (const commanditr in cooldown[channel]) {
+      if (cooldown[channel][commanditr][1] > 0) {
+        commandmsg.push(commanditr);
+      }
+    }
+    commandmsg = gFunc.formatPrintOptions(commandmsg, false);
+    client.say(channel, 'the current enabled commands on this bot are: ' + commandmsg);
+  }
+  
   // cooldown and command disabling
   if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp){
     Cooldown.changeCooldown(channel, message, client, cooldown, fs, files);

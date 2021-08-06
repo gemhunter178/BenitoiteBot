@@ -1,13 +1,14 @@
 // implements the cooldown functionality
 export const Cooldown = {
   // version number
-  version: '1.2.2',
+  version: '1.2.3',
   
   // default cooldowns
   // also a good list of all commands this currently has
   default_cooldowns: {
     '!!hello': [false, 1000],
     '!!logme': [false, 1000],
+    '!!commands': [false, 10000],
     '!!fish': [false, 5000],
     '!!fishstats': [false, 15000],
     '!!timer': [false, 30000],
