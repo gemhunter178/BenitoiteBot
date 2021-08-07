@@ -1,24 +1,24 @@
 // implements the cooldown functionality
 export const Cooldown = {
   // version number
-  version: '1.2.3',
+  version: '1.3',
   
   // default cooldowns
   // also a good list of all commands this currently has
   default_cooldowns: {
-    '!!hello': [false, 1000],
-    '!!logme': [false, 1000],
-    '!!commands': [false, 10000],
-    '!!fish': [false, 5000],
-    '!!fishstats': [false, 15000],
-    '!!timer': [false, 30000],
-    '!!codeword': [false, 2000],
-    '!!morse': [false, 10000],
-    '!!convert': [false, 10000],
-    '!!toneindicator': [false, 10000],
-    '!!word': [false, 10000],
+    '!!hello': 1000,
+    '!!logme': 1000,
+    '!!commands': 10000,
+    '!!fish': 5000,
+    '!!fishstats': 15000,
+    '!!timer': 30000,
+    '!!codeword': 2000,
+    '!!morse': 10000,
+    '!!convert': 10000,
+    '!!toneindicator': 10000,
+    '!!word': 10000,
     // trivia is meant to be mod-only but can be disabled.
-    '!!trivia': [false, 1]
+    '!!trivia': 1000
   },
   
   // used to initialize a new channel
@@ -27,7 +27,10 @@ export const Cooldown = {
       let channel = channels[i];
       // initialize cooldown object for channels that don't have one
       if (!cooldownObject.hasOwnProperty(channel)){
-        cooldownObject[channel] = this.default_cooldowns;
+        cooldownObject[channel] = {};
+        for (const command in this.default_cooldowns) {
+          cooldownObject[channel][command] = [this.default_cooldowns[command], 0];
+        }
       } 
     }
     this.update(cooldownObject, channels);
@@ -40,6 +43,18 @@ export const Cooldown = {
       needUpdate = true;
     } else if (cooldownObject.version !== this.version) {
       needUpdate = true;
+      // test for old version of cooldown file, if so rewrite.
+      const splitVersion = cooldownObject.version.split('.');
+      if (splitVersion[0] === '1' && splitVersion[1] <= 2) {
+        console.log('old cooldown object found');
+        for (const channel in cooldownObject) {
+          if (channel !== 'version') {
+            for (const command in cooldownObject[channel]) {
+              cooldownObject[channel][command] = [(cooldownObject[channel][command][1]), 0];
+            }
+          }
+        }
+      }
     }
     if(needUpdate) {
       console.log('updating cooldown file to v' + this.version);
@@ -47,8 +62,7 @@ export const Cooldown = {
         for ( const command in this.default_cooldowns ){
           if (!cooldownObject[channels[i]].hasOwnProperty(command)){
             //initialize as disabled
-            let temp = [true, -this.default_cooldowns[command][1]];
-            cooldownObject[channels[i]][command] = temp;
+            cooldownObject[channels[i]][command] = [-this.default_cooldowns[command], 0];
           }
         }
       }
@@ -65,7 +79,7 @@ export const Cooldown = {
     });
   },
   
-  // resets the cooldown file of a channel
+  /* DEPRECATED: resets the cooldown file of a channel
   resetCooldown: function (channel, cooldown){
     for (const command in cooldown[channel]){
       if(cooldown[channel][command][1] < 0){
@@ -74,14 +88,21 @@ export const Cooldown = {
         cooldown[channel][command][0] = false;
       }
     }
-  },
+  }, */
   
-  // triggers cooldown to prevent spam
-  setCooldown: function (channel, command, cooldown){
-    cooldown[channel][command][0] = true;
-    if (cooldown[channel][command][1] > 0){
-      setTimeout(function(){cooldown[channel][command][0] = false;},cooldown[channel][command][1]);
-    }
+  // tests for cooldown, sets and returns true if command is available. else returns false
+  checkCooldown: function (channel, command, cooldownObject, time, allow){
+    if (!allow) {
+      return false;
+    } else if (cooldownObject[channel][command][0] < 0) {
+      return false;
+    } else if (time - cooldownObject[channel][command][1] > cooldownObject[channel][command][0]) {
+      // cooldown is over
+      cooldownObject[channel][command][1] = time;
+      return true;
+    } else {
+      return false;
+    }    
   },
   
   // command to parse message and change cooldown time if no syntax errors
@@ -111,10 +132,10 @@ export const Cooldown = {
           client.say(channel, `negative cooldown times are not allowed.`);
         } else {
           time  = time.toFixed(3) * 1000;
-          if (cooldown[channel][command][1] < 0) {
+          if (cooldown[channel][command][0] < 0) {
             time = -time;
           }
-          cooldown[channel][command][1] = time;
+          cooldown[channel][command][0] = time;
           client.say(channel, command + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
           this.saveCooldownFile(cooldown, fs, files);
         }
@@ -124,11 +145,9 @@ export const Cooldown = {
   
   // enable or disable a command based on a bool 'enable'
   enable: function (channel, message, client, cooldown, fs, files, enable) {
-    let newStat = false;
     let newTime = 1;
     let updateMessage = ' enabled.';
     if (!enable) {
-      newStat = true;
       newTime = -1;
       updateMessage = ' disabled.';
     }
@@ -137,14 +156,12 @@ export const Cooldown = {
       client.say(channel, `no command found. example: !!disable !!hello`);
     } else {
       if (cooldown[channel][query[1]]){
-        cooldown[channel][query[1]][0] = newStat;
-        cooldown[channel][query[1]][1] = newTime * Math.abs(cooldown[channel][query[1]][1]);
+        cooldown[channel][query[1]][0] = newTime * Math.abs(cooldown[channel][query[1]][0]);
         client.say(channel, query[1] + updateMessage);
         this.saveCooldownFile(cooldown, fs, files);
       } else if (query[1] === 'all') {
         for (const command in cooldown[channel]) {
-          cooldown[channel][command][0] = newStat;
-          cooldown[channel][command][1] = newTime * Math.abs(cooldown[channel][command][1]);
+          cooldown[channel][command][0] = newTime * Math.abs(cooldown[channel][command][0]);
         }
         client.say(channel, `all commands` + updateMessage);
         this.saveCooldownFile(cooldown, fs, files);

@@ -42,10 +42,10 @@ try {
 // initialize values for new channels
 Cooldown.init_new(cooldown, CHANNELS);
 
-// reset cooldown states in case edge cases arise
+/* DEPRECATED reset cooldown states in case edge cases arise
 for (let i = 0; i < CHANNELS.length; i++) {
   Cooldown.resetCooldown(CHANNELS[i], cooldown);
-}
+} */
 
 // save created config above
 Cooldown.saveCooldownFile(cooldown, fs, files);
@@ -58,6 +58,7 @@ Trivia.initialize(fs, CHANNELS, files.triviaData);
 client.connect();
 
 client.on('message', (channel, user, message, self) => {
+  const current_time = Date.now();
   
   // messages that need to match only the first word
   let firstWord = message.split(' ')[0];
@@ -72,34 +73,36 @@ client.on('message', (channel, user, message, self) => {
   if (!message.startsWith('!')) return;
   
   // default command, sort of a !ping
-  if (message.toLowerCase() === '!!hello' && !cooldown[channel]['!!hello'][0]) {
+  if (message.toLowerCase() === '!!hello' && Cooldown.checkCooldown(channel, '!!hello', cooldown, current_time, true)) {
     // "@user, heya!"
-    Cooldown.setCooldown(channel, '!!hello', cooldown);
     client.say(channel, `Heya, ` + user['display-name'] + `!`);
   }
   
   // shut off bot (use only when necesssary)
   if (message.toLowerCase() === '!!goodbye' && user.username === OWNER) {
-    client.say(channel, `Alright, see you later!`);
-    console.log('bot terminated by user');
-    process.exit(0);
+    const writeCooldown = JSON.stringify(cooldown);
+    gFunc.writeFilePromise(fs, files.cooldown, writeCooldown).then( pass => {
+      client.say(channel, `Alright, see you later!`);
+      console.log('bot terminated by user');
+      process.exit(0);
+    }, error => {
+      client.say(channel, 'error in writing cooldown file before stopping bot');
+    });
   }
   
   // debugging and such
-  if (message.toLowerCase() === '!!logme' && !cooldown[channel]['!!logme'][0]) {
+  if (message.toLowerCase() === '!!logme' && Cooldown.checkCooldown(channel, '!!logme', cooldown, current_time, true)) {
     // mostly for debug purposes
-    Cooldown.setCooldown(channel, '!!logme', cooldown);
     client.say(channel, user['display-name'] + ` has been logged on console`);
     console.log(user);
     console.log(isModUp);
   }
   
   // command list
-  if (firstWord.toLowerCase() === '!!commands' && !cooldown[channel]['!!commands'][0]){
-    Cooldown.setCooldown(channel, '!!commands', cooldown);
+  if (firstWord.toLowerCase() === '!!commands' && Cooldown.checkCooldown(channel, '!!commands', cooldown, current_time, true)){
     let commandmsg = [];
     for (const commanditr in cooldown[channel]) {
-      if (cooldown[channel][commanditr][1] > 0) {
+      if (cooldown[channel][commanditr][0] > 0) {
         commandmsg.push(commanditr);
       }
     }
@@ -120,26 +123,24 @@ client.on('message', (channel, user, message, self) => {
     Cooldown.enable(channel, message, client, cooldown, fs, files, true);
   }
   
+  /* DEPRECATED since cooldown 1.3
   if ((firstWord.toLowerCase() === '!!resetcd' || firstWord.toLowerCase() === '!!resetcooldown') && isModUp){
     Cooldown.resetCooldown(channel, cooldown);
     Cooldown.saveCooldownFile(cooldown, fs, files);
     client.say(channel, `cooldown file has been reset`);
-  }
+  } */
   
   // the famous !fish commands
-  if (firstWord.toLowerCase() === '!!fish' && !cooldown[channel]['!!fish'][0]) { 
-    Cooldown.setCooldown(channel, '!!fish', cooldown); 
+  if (firstWord.toLowerCase() === '!!fish' && Cooldown.checkCooldown(channel, '!!fish', cooldown, current_time, true)) { 
     FISH(files.fishDataFiles, fs, user, channel, client);
   }
   
-  if (firstWord.toLowerCase() === '!!fishstats' && !cooldown[channel]['!!fishstats'][0]) {
-    Cooldown.setCooldown(channel, '!!fishstats', cooldown);
+  if (firstWord.toLowerCase() === '!!fishstats' && Cooldown.checkCooldown(channel, '!!fishstats', cooldown, current_time, true)) {
     FISH_STATS(files.fishDataFiles, fs, user, channel, client);
   }
   
   // timer command
-  if (/^!!timer\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!timer'][0]){
-    Cooldown.setCooldown(channel, '!!timer', cooldown);
+  if (/^!!timer\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!timer', cooldown, current_time, isModUp)){
     let query = message.replace(/^!+timer[\s]*/,'');
     let timeMin = parseFloat(query);
     if (isNaN(timeMin) || timeMin <= 0){
@@ -155,34 +156,30 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // codewords
-  if (/^!!codeword\b/i.test(firstWord) && !cooldown[channel]['!!codeword'][0]) {
-    Cooldown.setCooldown(channel, '!!codeword', cooldown);
+  if (/^!!codeword\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!codeword', cooldown, current_time, true)) {
     CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
   }
   
   // morse code
-  if (/^!!morse\b/i.test(firstWord) && !cooldown[channel]['!!morse'][0]){ 
-    Cooldown.setCooldown(channel, '!!morse', cooldown);
+  if (/^!!morse\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!morse', cooldown, current_time, true)){
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
   
   //convert
-  if (/^!!convert\b/i.test(firstWord) && !cooldown[channel]['!!convert'][0]){ 
-    Cooldown.setCooldown(channel, '!!convert', cooldown);
+  if (/^!!convert\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!convert', cooldown, current_time, true)){
     let query = message.replace(/^!+convert[\s]*/,'');
     CONVERT(channel, client, query);
   }
   
   //tone indicator search
-  if (/^!!toneindicator\b/i.test(firstWord) && !cooldown[channel]['!!toneindicator'][0]){ 
-    Cooldown.setCooldown(channel, '!!toneindicator', cooldown);
+  if (/^!!toneindicator\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!toneindicator', cooldown, current_time, true)){
     let query = message.replace(/^!+toneindicator[\s]*/,'');
     InternetLang.searchToneInd(channel, client, query);
   }
 
   // wordsapi command
-  if (/^!!word\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!word'][0]){ 
+  if (/^!!word\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!word', cooldown, current_time, isModUp)){ 
     let query = message.replace(/^!+word[\s]*/,'');
     if(API_KEYS['x-rapidapi-key']){
       client.say(channel, 'not implemented yet :( ');
@@ -192,7 +189,7 @@ client.on('message', (channel, user, message, self) => {
   }
 
   //trivia commands
-  if (/^!!trivia\b/i.test(firstWord) && isModUp && !cooldown[channel]['!!trivia'][0]){ 
+  if (/^!!trivia\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!trivia', cooldown, current_time, isModUp)){ 
     let query = message.replace(/^!+trivia[\s]*/,'');
     Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }
