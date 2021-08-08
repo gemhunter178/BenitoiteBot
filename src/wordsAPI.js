@@ -13,7 +13,7 @@ export const WordsApi = {
           data.time = time;
           data.uses = 0;
           data.cache = {};
-        } else if (time - data.time > 86400000) {
+        } else if (time - data.time > 3600000) {
           // day has passed
           data.time = time;
           data.uses = 0;
@@ -42,9 +42,14 @@ export const WordsApi = {
       // eventual cache implementaion
     } else {
       // word and arg does not exist in cache
-      if (wordsData.uses < 2400) {
+      if (Date.now() - wordsData.time > 3600000) {
+        wordsData.time = Date.now();
+        data.uses = 0;
+        wordsData.cache = {};
+      }
+      if (wordsData.uses < 90) {
         // limit is 2500/day, using this for safety
-        message = '/words/' + message + '/definitions';
+        message = '/words/' + message.replace(/\s/g, '%20') + '/definitions';
         // taken from rapidapi:
         const http = require('https');
         
@@ -108,7 +113,7 @@ export const WordsApi = {
         req.end();
         
       } else {
-        client.say(channel, 'maximum API requests reached, cannot retrieve data today');
+        client.say(channel, 'maximum API requests reached, cannot retrieve more data this hour');
       }
     }
   }
