@@ -31,6 +31,15 @@ export const gFunc = {
     return promise;
   },
   
+  // async verion that does not promise
+  save: function (fs, data, file){
+    data = JSON.stringify(data);
+    fs.writeFile(file, data, (err) => {
+      if (err) console.log(err);
+      else console.log(file + ' saved');
+    });
+  },
+  
   // returns a promise with the data in the file
   readFilePromise: function (fs, fileName, createNew) {
     let promise = new Promise ((resolve, reject) => {

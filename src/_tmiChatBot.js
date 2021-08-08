@@ -9,7 +9,7 @@ import { CODEWORDGAME } from './codewordsGame';
 import { MORSE } from './morseDecoder';
 import { CONVERT } from './convert';
 import { InternetLang } from './ILang';
-import { wordsApi } from './wordsAPI';
+import { WordsApi } from './wordsAPI';
 import { Trivia } from './triviaCommands';
 
 const client = new tmi.Client({
@@ -50,9 +50,21 @@ for (let i = 0; i < CHANNELS.length; i++) {
 // save created config above
 Cooldown.saveCooldownFile(cooldown, fs, files);
 
-//check if trivia categories needs updating
+// initialize wordsAPI object
+let wordsApiData;
+WordsApi.init(fs, files.wordsAPI, Date.now())
+.then ( data => {
+  if (data) {
+    wordsApiData = data;
+    gFunc.save(fs, wordsApiData, files.wordsAPI);
+  } else {
+    console.log('error in making wordsApiData object!');
+  }
+});
+
+// check if trivia categories needs updating
 Trivia.getCat(fs, files.triviaCatFile, false);
-//initialize trivia files
+// initialize trivia files
 Trivia.initialize(fs, CHANNELS, files.triviaData);
 
 client.connect();
@@ -182,7 +194,7 @@ client.on('message', (channel, user, message, self) => {
   if (/^!!word\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!word', cooldown, current_time, isModUp)){ 
     let query = message.replace(/^!+word[\s]*/,'');
     if(API_KEYS['x-rapidapi-key']){
-      client.say(channel, 'not implemented yet :( ');
+      WordsApi.runCommand(fs, channel, wordsApiData, files.wordsAPI, client, query);
     } else {
       client.say(channel, '!!words requires an API key for wordsAPI (#notspon) to function');
     }
