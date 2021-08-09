@@ -1,7 +1,7 @@
 // implements the cooldown functionality
 export const Cooldown = {
   // version number
-  version: '1.3',
+  version: '1.3.1',
   
   // default cooldowns
   // also a good list of all commands this currently has
@@ -16,7 +16,7 @@ export const Cooldown = {
     '!!morse': 10000,
     '!!convert': 10000,
     '!!toneindicator': 10000,
-    '!!word': 10000,
+    '!!define': 10000,
     // trivia is meant to be mod-only but can be disabled.
     '!!trivia': 1000
   },
@@ -69,6 +69,8 @@ export const Cooldown = {
       cooldownObject.version = this.version;
     }
   },
+  
+  //eventually may need a funtion to remove old depreicated cooldowns.
   
   // saves the current working cooldown file
   saveCooldownFile: function (data, fs, files){

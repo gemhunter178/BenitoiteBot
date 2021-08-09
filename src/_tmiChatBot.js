@@ -191,8 +191,8 @@ client.on('message', (channel, user, message, self) => {
   }
 
   // wordsapi command
-  if (/^!!word\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!word', cooldown, current_time, isModUp)){ 
-    let query = message.replace(/^!+word[\s]*/,'');
+  if (/^!!define\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!define', cooldown, current_time, isModUp)){ 
+    let query = message.replace(/^!+define[\s]*/,'');
     if(API_KEYS['x-rapidapi-key']){
       WordsApi.runCommand(fs, channel, wordsApiData, files.wordsAPI, client, query);
     } else {
