@@ -44,7 +44,7 @@ export const WordsApi = {
       // word and arg does not exist in cache
       if (Date.now() - wordsData.time > 3600000) {
         wordsData.time = Date.now();
-        data.uses = 0;
+        wordsData.uses = 0;
         wordsData.cache = {};
       }
       if (wordsData.uses < 90) {
