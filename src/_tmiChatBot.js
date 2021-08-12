@@ -200,10 +200,23 @@ client.on('message', (channel, user, message, self) => {
     }
   }
 
-  //trivia commands
+  // trivia commands
   if (/^!!trivia\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!trivia', cooldown, current_time, isModUp)){ 
     let query = message.replace(/^!+trivia[\s]*/,'');
     Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }
   
+  // purge means ban everyone in the provided list, bans happen 1.5 seconds apart and will only work if bot is modded
+  // remove '&& false' if you want this command to be available.
+  if (firstWord === '!!purge' && isModUp && false) {
+    //future implementaion of not using so many setTimeout objects?
+    gFunc.readFilePromise(fs, './data/ban_list.json', false).then( ban_list => {
+      ban_list = JSON.parse(ban_list);
+      for (let i = 0; i < ban_list.length; i++) {
+        setTimeout( function(){ client.say(channel, '/ban ' + ban_list[i]);}, 1500*i);
+      }
+    }, error => {
+      client.say(channel, 'no list found');
+    });
+  }
 });
