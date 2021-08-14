@@ -198,6 +198,15 @@ export const Trivia = {
         case 0:
           // normal functions
           let startMsg = '';
+          const time = Date.now();
+          const objName = channel + '-' + time;
+          const endTime = time + triviaData[channel].time;
+          saveChatArray[objName] = {
+            channel,
+            time,
+            endTime,
+            messages: []
+          };
           if (triviaData[channel].category === -1) {
             startMsg += '[' + decodeURIComponent(result.results[0].category) + '] ';
           }
@@ -210,6 +219,7 @@ export const Trivia = {
             client.say(channel, startMsg);
             setTimeout(function(){
               client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer);
+              delete saveChatArray[objName];
             }, triviaData[channel].time);
           } else {
             // mulitple choice
@@ -232,6 +242,7 @@ export const Trivia = {
             client.say(channel, startMsg);
             setTimeout(function(){
               client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer));
+              delete saveChatArray[objName];
             }, triviaData[channel].time);
           }
           break;

@@ -80,6 +80,20 @@ client.on('message', (channel, user, message, self) => {
   let isModUp = isMod || isBroadcaster;
   // Ignore messages from self.
   if (self) return;
+  
+  // test if there are chats to be added into the temp chat array
+  if (Object.keys(saveChats).length !== 0) {
+    // [debug] console.log(saveChats);
+    for (const obj in saveChats) {
+      if (channel === saveChats[obj].channel && current_time < saveChats[obj].endTime) {
+        saveChats[obj].messages.push({
+          current_time,
+          "user": user['display-name'],
+          message
+        });
+      }
+    }
+  }
 
   // commands past this must start with !
   if (!message.startsWith('!')) return;
