@@ -179,6 +179,24 @@ export const Trivia = {
       return;
     }
   },
+  
+  // based on messages in a saveChat, returns a string to append to message. also deletes used object.
+  evalAns: function (saveChatArray, evalObj, correctAns) {
+    let message = ' | Congrats to ';
+    const compareTo = new RegExp('^' + correctAns[0] + '$', 'i');
+    for (let i = 0; i < saveChatArray[evalObj].messages.length; i++) {
+      if (compareTo.test(saveChatArray[evalObj].messages[i].message)) {
+        message += saveChatArray[evalObj].messages[i].user + ' for getting the right answer first!';
+        break;
+      }
+    }
+    delete saveChatArray[evalObj];
+    if (message === ' | Congrats to ') {
+      return ' | ...no one got the answer';
+    } else {
+      return message;
+    }
+  },
 
   start: function (fs, channel, triviaData, client, saveChatArray){
     let getTriviaURL = 'https://opentdb.com/api.php?amount=1';
@@ -217,9 +235,9 @@ export const Trivia = {
             // true or false questions
             startMsg += 'True or False: ' + decodeURIComponent(result.results[0].question);
             client.say(channel, startMsg);
-            setTimeout(function(){
-              client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer);
-              delete saveChatArray[objName];
+            setTimeout(() => {
+              const addMsg = this.evalAns(saveChatArray, objName, result.results[0].correct_answer);
+              client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer + addMsg);
             }, triviaData[channel].time);
           } else {
             // mulitple choice
@@ -240,9 +258,9 @@ export const Trivia = {
             }
             startMsg += decodeURIComponent(result.results[0].question) + ' ' + addMsg;
             client.say(channel, startMsg);
-            setTimeout(function(){
-              client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer));
-              delete saveChatArray[objName];
+            setTimeout(() => {
+              const addMsg = this.evalAns(saveChatArray, objName, letters[ans_placement]);
+              client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer) + addMsg);
             }, triviaData[channel].time);
           }
           break;
