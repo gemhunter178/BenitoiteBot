@@ -149,13 +149,6 @@ client.on('message', (channel, user, message, self) => {
     Cooldown.enable(channel, message, client, cooldown, fs, files, true);
   }
   
-  /* DEPRECATED since cooldown 1.3
-  if ((firstWord.toLowerCase() === '!!resetcd' || firstWord.toLowerCase() === '!!resetcooldown') && isModUp){
-    Cooldown.resetCooldown(channel, cooldown);
-    Cooldown.saveCooldownFile(cooldown, fs, files);
-    client.say(channel, `cooldown file has been reset`);
-  } */
-  
   // the famous !fish commands
   if (firstWord.toLowerCase() === '!!fish' && Cooldown.checkCooldown(channel, '!!fish', cooldown, current_time, true)) { 
     FISH(files.fishDataFiles, fs, user, channel, client);
@@ -168,17 +161,27 @@ client.on('message', (channel, user, message, self) => {
   // timer command
   if (/^!!timer\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!timer', cooldown, current_time, isModUp)){
     let query = message.replace(/^!+timer[\s]*/,'');
-    let timeMin = parseFloat(query);
+    query = query.split(' ');
+    let timeMin = parseFloat(query[0]);
+    // to be added back if the next check fails
+    const maybeNum = query.shift();
+    let addMsg = query.join(' ');
     if (isNaN(timeMin) || timeMin <= 0){
       timeMin = 10;
+      addMsg = maybeNum + ' ' + addMsg;
     } else if (timeMin % 1 != 0) {
       timeMin = timeMin.toFixed(4);
     }
     let plural = ' minutes';
     if (timeMin === 1) plural = ' minute';
     client.say(channel, `Timer set for ` + timeMin + plural + '!');
-    console.log('timer set for ' + timeMin + plural + ' from now');
-    setTimeout(function(){client.say(channel, `*TIMER END* This timer was set ` + timeMin + plural + ` ago!`)},timeMin * 60000);
+    console.log('timer set for ' + timeMin + plural + ' from now in ' + channel);
+    if (addMsg.length === 0) {
+      addMsg = '[TIMER END!] this one was set ' + timeMin + plural + ' ago';
+    } else {
+      addMsg = '[From ' + timeMin + plural + ' ago] -> ' + addMsg;
+    }
+    setTimeout(function(){client.say(channel, addMsg)},timeMin * 60000);
   }
   
   // codewords
@@ -199,8 +202,8 @@ client.on('message', (channel, user, message, self) => {
   }
   
   //tone indicator search
-  if (/^!!toneindicator\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!toneindicator', cooldown, current_time, true)){
-    let query = message.replace(/^!+toneindicator[\s]*/,'');
+  if (/^!!tone\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!tone', cooldown, current_time, true)){
+    let query = message.replace(/^!+tone[\s]*/,'');
     InternetLang.searchToneInd(channel, client, query);
   }
 

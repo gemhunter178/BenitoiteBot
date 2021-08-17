@@ -15,7 +15,7 @@ export const Cooldown = {
     '!!codeword': 2000,
     '!!morse': 10000,
     '!!convert': 10000,
-    '!!toneindicator': 10000,
+    '!!tone': 10000,
     '!!define': 10000,
     // trivia is meant to be mod-only but can be disabled.
     '!!trivia': 1000
@@ -80,17 +80,6 @@ export const Cooldown = {
       else console.log('cooldown file updated');
     });
   },
-  
-  /* DEPRECATED: resets the cooldown file of a channel
-  resetCooldown: function (channel, cooldown){
-    for (const command in cooldown[channel]){
-      if(cooldown[channel][command][1] < 0){
-        cooldown[channel][command][0] = true;
-      } else {
-        cooldown[channel][command][0] = false;
-      }
-    }
-  }, */
   
   // tests for cooldown, sets and returns true if command is available. else returns false
   checkCooldown: function (channel, command, cooldownObject, time, allow){
