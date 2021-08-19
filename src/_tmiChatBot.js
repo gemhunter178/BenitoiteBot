@@ -11,6 +11,7 @@ import { CONVERT } from './convert';
 import { InternetLang } from './ILang';
 import { WordsApi } from './wordsAPI';
 import { Trivia } from './triviaCommands';
+import { Timer } from './timer';
 
 const client = new tmi.Client({
   options: { debug: true },
@@ -66,6 +67,9 @@ WordsApi.init(fs, files.wordsAPI, Date.now())
 Trivia.getCat(fs, files.triviaCatFile, false);
 // initialize trivia files
 Trivia.initialize(fs, CHANNELS, files.triviaData);
+
+// timer deletion implementation
+let timerObject = Timer.init(CHANNELS);
 
 client.connect();
 
@@ -125,7 +129,7 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // command list
-  if (firstWord.toLowerCase() === '!!commands' && Cooldown.checkCooldown(channel, '!!commands', cooldown, current_time, true)){
+  if (firstWord.toLowerCase() === '!!commands' && Cooldown.checkCooldown(channel, '!!commands', cooldown, current_time, true)) {
     let commandmsg = [];
     for (const commanditr in cooldown[channel]) {
       if (cooldown[channel][commanditr][0] > 0) {
@@ -137,15 +141,15 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // cooldown and command disabling
-  if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp){
+  if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp) {
     Cooldown.changeCooldown(channel, message, client, cooldown, fs, files);
   }
   
-  if (firstWord.toLowerCase() === '!!disable' && isModUp){
+  if (firstWord.toLowerCase() === '!!disable' && isModUp) {
     Cooldown.enable(channel, message, client, cooldown, fs, files, false);
   }
   
-  if (firstWord.toLowerCase() === '!!enable' && isModUp){
+  if (firstWord.toLowerCase() === '!!enable' && isModUp) {
     Cooldown.enable(channel, message, client, cooldown, fs, files, true);
   }
   
@@ -159,29 +163,13 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // timer command
-  if (/^!!timer\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!timer', cooldown, current_time, isModUp)){
-    let query = message.replace(/^!+timer[\s]*/,'');
-    query = query.split(' ');
-    let timeMin = parseFloat(query[0]);
-    // to be added back if the next check fails
-    const maybeNum = query.shift();
-    let addMsg = query.join(' ');
-    if (isNaN(timeMin) || timeMin <= 0){
-      timeMin = 10;
-      addMsg = maybeNum + ' ' + addMsg;
-    } else if (timeMin % 1 != 0) {
-      timeMin = timeMin.toFixed(4);
-    }
-    let plural = ' minutes';
-    if (timeMin === 1) plural = ' minute';
-    client.say(channel, `Timer set for ` + timeMin + plural + '!');
-    console.log('timer set for ' + timeMin + plural + ' from now in ' + channel);
-    if (addMsg.length === 0) {
-      addMsg = '[TIMER END!] this one was set ' + timeMin + plural + ' ago';
-    } else {
-      addMsg = '[From ' + timeMin + plural + ' ago] -> ' + addMsg;
-    }
-    setTimeout(function(){client.say(channel, addMsg)},timeMin * 60000);
+  if (/^!!timer\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!timer', cooldown, current_time, isModUp)) {
+    Timer.addTimer(channel, message, client, timerObject);
+  }
+  
+  //delete last timer
+  if (/^!!deltimer\b/i.test(firstWord) && isModUp) {
+    Timer.delLastTimer(channel, client, timerObject);
   }
   
   // codewords
@@ -190,27 +178,27 @@ client.on('message', (channel, user, message, self) => {
   }
   
   // morse code
-  if (/^!!morse\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!morse', cooldown, current_time, true)){
+  if (/^!!morse\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!morse', cooldown, current_time, true)) {
     let query = message.replace(/^!+morse[\s]*/,'');
     MORSE(user, channel, client, query);
   }
   
   //convert
-  if (/^!!convert\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!convert', cooldown, current_time, true)){
+  if (/^!!convert\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!convert', cooldown, current_time, true)) {
     let query = message.replace(/^!+convert[\s]*/,'');
     CONVERT(channel, client, query);
   }
   
   //tone indicator search
-  if (/^!!tone\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!tone', cooldown, current_time, true)){
+  if (/^!!tone\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!tone', cooldown, current_time, true)) {
     let query = message.replace(/^!+tone[\s]*/,'');
     InternetLang.searchToneInd(channel, client, query);
   }
 
   // wordsapi command
-  if (/^!!define\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!define', cooldown, current_time, isModUp)){ 
+  if (/^!!define\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!define', cooldown, current_time, isModUp)) { 
     let query = message.replace(/^!+define[\s]*/,'');
-    if(API_KEYS['x-rapidapi-key']){
+    if (API_KEYS['x-rapidapi-key']) {
       WordsApi.runCommand(fs, channel, wordsApiData, files.wordsAPI, client, query);
     } else {
       client.say(channel, '!!words requires an API key for wordsAPI (#notspon) to function');
@@ -218,7 +206,7 @@ client.on('message', (channel, user, message, self) => {
   }
 
   // trivia commands
-  if (/^!!trivia\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!trivia', cooldown, current_time, isModUp)){ 
+  if (/^!!trivia\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!trivia', cooldown, current_time, isModUp)) { 
     let query = message.replace(/^!+trivia[\s]*/,'');
     Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
   }
@@ -230,7 +218,7 @@ client.on('message', (channel, user, message, self) => {
     gFunc.readFilePromise(fs, './data/ban_list.json', false).then( ban_list => {
       ban_list = JSON.parse(ban_list);
       for (let i = 0; i < ban_list.length; i++) {
-        setTimeout( function(){ client.say(channel, '/ban ' + ban_list[i]);}, 1500*i);
+        setTimeout( function() { client.say(channel, '/ban ' + ban_list[i]);}, 1500*i);
       }
     }, error => {
       client.say(channel, 'no list found');

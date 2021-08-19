@@ -1,3 +1,4 @@
+// file full of general functions used elsewhere
 export const gFunc = {
   readHttps: function (site) {
     const promise = new Promise ((resolve,reject) => {
