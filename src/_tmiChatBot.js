@@ -1,3 +1,4 @@
+'use strict';
 import tmi from 'tmi.js';
 import fs from 'fs';
 import { gFunc } from './_generalFunctions';
@@ -25,9 +26,10 @@ const client = new tmi.Client({
 
 // defining commands
 class Command {
-  constructor(name, runFunc, defCooldown, modOnly, desc) {
+  constructor(name, exVar, runFunc, defCooldown, modOnly, desc) {
     this.name = name;
     this.regExp = new RegExp('^' + name + '\\b', 'i');
+    this.exVar = exVar;
     this.run = runFunc;
     this.defaultCooldown = defCooldown;
     this.modOnly = modOnly;
@@ -38,7 +40,7 @@ class Command {
 let commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
   const passName = prefix + defCommands[i].name;
-  commandArray.push(new Command(passName, defCommands[i].run, defCommands[i].cd, defCommands[i].mod, defCommands[i].desc));
+  commandArray.push(new Command(passName, defCommands[i].exVar, defCommands[i].run, defCommands[i].cd, defCommands[i].mod, defCommands[i].desc));
 }
 
 let cooldown;
@@ -90,6 +92,11 @@ Trivia.initialize(fs, CHANNELS, files.triviaData);
 // timer deletion implementation
 let timerObject = Timer.init(CHANNELS);
 
+// object to pass extra variables to object-generated commands
+const extraVar = {
+  cooldown: cooldown
+}
+
 // CLIENT CONNECT + REACT TO MESSAGES HERE
 client.connect();
 
@@ -126,8 +133,13 @@ client.on('message', (channel, user, message, self) => {
   // all commands currently defined in _defCommands.js
   for (let i = 0; i < commandArray.length; i++) {
     if (commandArray[i].regExp.test(message)) {
+      let query = message.replace(commandArray[i].regExp, '');
+      query = query.replace(/^\s+/, '');
       let accessLvl = true;
       switch (commandArray[i].modOnly) {
+        case 0:
+          // do nothing
+          break;
         case 1:
           accessLvl = isModUp;
           break;
@@ -137,24 +149,21 @@ client.on('message', (channel, user, message, self) => {
           break;
 
         case -1:
-          if(user.username === OWNER) {
-            accessLvl = true;
-          } else {
+          if(user.username !== OWNER) {
             accessLvl = false;
           }
           break;
           
         default:
-          // do nothing
+          //if not defined, better not to run
+          accessLvl = false;
           break;
       }
-      let query = message.replace(commandArray[i].regExp, '');
-      query = query.replace(/^\s+/, '');
       try {
-        if (query === 'help') {
+        if (query === 'help' && commandArray[i].desc) {
           client.say(channel, commandArray[i].desc)
         } else if (Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, accessLvl)) {
-            commandArray[i].run(client, channel, user, query);
+            commandArray[i].run(client, channel, user, query, extraVar[commandArray[i].exVar]);
         }
       } catch (err){
         console.error(err.message);
@@ -179,22 +188,7 @@ client.on('message', (channel, user, message, self) => {
     });
   }
   
-  // command list
-  if (firstWord.toLowerCase() === '!!commands' && Cooldown.checkCooldown(channel, '!!commands', cooldown, current_time, true)) {
-    let commandmsg = [];
-    for (const commanditr in cooldown[channel]) {
-      if (cooldown[channel][commanditr][0] > 0) {
-        commandmsg.push(commanditr);
-      }
-    }
-    commandmsg = gFunc.formatPrintOptions(commandmsg, false);
-    client.say(channel, 'the current enabled commands on this bot are: ' + commandmsg);
-  }
-  
   // cooldown and command disabling
-  if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp) {
-    Cooldown.changeCooldown(channel, message, client, cooldown);
-  }
   
   if (firstWord.toLowerCase() === '!!disable' && isModUp) {
     Cooldown.enable(channel, message, client, cooldown, false);
