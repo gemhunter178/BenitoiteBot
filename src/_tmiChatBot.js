@@ -1,6 +1,7 @@
 import tmi from 'tmi.js';
 import fs from 'fs';
 import { gFunc } from './_generalFunctions';
+import { prefix, defCommands } from './_defCommands';
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants';
 import { files } from './filePaths';
 import { Cooldown } from './cooldown';
@@ -21,6 +22,23 @@ const client = new tmi.Client({
   },
   channels: CHANNELS
 });
+
+// defining commands
+class Command {
+  constructor(name, runFunc, defCooldown, modOnly) {
+    this.name = name;
+    this.regExp = new RegExp('^' + name + '\\b', 'i');
+    this.run = runFunc;
+    this.defaultCooldown = defCooldown;
+    this.modOnly = modOnly;
+  }
+}
+
+let commandArray = [];
+for (let i = 0; i < defCommands.length; i++) {
+  const passName = prefix + defCommands[i].name;
+  commandArray.push(new Command(passName, defCommands[i].run, defCommands[i].cd, defCommands[i].mod));
+}
 
 let cooldown;
 // for privacy reasons, saved chats aren't stored in any file
@@ -71,6 +89,7 @@ Trivia.initialize(fs, CHANNELS, files.triviaData);
 // timer deletion implementation
 let timerObject = Timer.init(CHANNELS);
 
+// CLIENT CONNECT + REACT TO MESSAGES HERE
 client.connect();
 
 client.on('message', (channel, user, message, self) => {
@@ -98,14 +117,45 @@ client.on('message', (channel, user, message, self) => {
       }
     }
   }
-
-  // commands past this must start with !
-  if (!message.startsWith('!')) return;
   
-  // default command, sort of a !ping
-  if (message.toLowerCase() === '!!hello' && Cooldown.checkCooldown(channel, '!!hello', cooldown, current_time, true)) {
-    // "@user, heya!"
-    client.say(channel, `Heya, ` + user['display-name'] + `!`);
+  
+  // commands past this must start with prefix (definied in _defCommands.js)
+  if (!message.startsWith(prefix)) return;
+  
+  // all commands currently defined in _defCommands.js
+  for (let i = 0; i < commandArray.length; i++) {
+    if (commandArray[i].regExp.test(message)) {
+      let accessLvl = true;
+      switch (commandArray[i].modOnly) {
+        case 1:
+          accessLvl = isModUp;
+          break;
+
+        case 2:
+          accessLvl = isBroadcaster;
+          break;
+
+        case -1:
+          if(user.username === OWNER) {
+            accessLvl = true;
+          } else {
+            accessLvl = false;
+          }
+          break;
+          
+        default:
+          // do nothing
+          break;
+      }
+      if(Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, accessLvl)) {
+        let query = message.replace(commandArray[i].regExp, '');
+        try {
+          commandArray[i].run(client, channel, user, query);
+        } catch {
+          console.log('error running ' + commandArray[i].name + '!');
+        }
+      }
+    }
   }
   
   // shut off bot (use only when necesssary)
