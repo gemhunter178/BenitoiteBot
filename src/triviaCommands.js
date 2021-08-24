@@ -1,8 +1,10 @@
+import fs from 'fs';
+import { files } from './filePaths';
 import { gFunc } from './_generalFunctions';
 // powered by https://opentdb.com/api_config.php
 // trivia command object with everything needed to make a working trivia game
 export const Trivia = {
-  getCat: function (fs, file, force) {
+  getCat: function (file, force) {
     // fetch current time
     const current_time = Date.now();
     
@@ -48,7 +50,7 @@ export const Trivia = {
           // for caching
           formatCategories.retrivalTime = current_time;
           formatCategories = JSON.stringify(formatCategories);
-          gFunc.writeFilePromise(fs, file, formatCategories).then(resultWrite => {
+          gFunc.writeFilePromise(file, formatCategories).then(resultWrite => {
             console.log(resultWrite); 
           }, errorWrite => {
             console.log(errorWrite)
@@ -65,9 +67,9 @@ export const Trivia = {
   },
 
   // used to initialize the trivia file. note 'channels' is the list of all channels the bot is in
-  initialize: function (fs, channels, file){
+  initialize: function (channels, file){
     let triviaData;
-    gFunc.readFilePromise(fs, file, true).then(data => {
+    gFunc.readFilePromise(file, true).then(data => {
       triviaData = JSON.parse(data);
       for (let i = 0; i < channels.length; i++) {
         if (!triviaData.hasOwnProperty(channels[i])){
@@ -91,14 +93,14 @@ export const Trivia = {
         return;
       } else {
         result = JSON.stringify(result);
-        gFunc.writeFilePromise(fs, file, result);
+        gFunc.writeFilePromise(file, result);
       }
     });
   },
 
   // command that calls the other commands (use this in the chatbot command)
-  useCommand: function (fs, channel, dataFile, catFile, client, message, saveChatArray) {
-    if (message.length === 0) {
+  useCommand: function (client, channel, user, query, saveChatArray) {
+    if (query.length === 0) {
       client.say(channel, 'trivia, powered by Open Trivia Database! options: \'explain\', \'start\', \'category\', \'difficulty\', \'type\', \'time\', \'config\'');
       return;
     }
@@ -116,38 +118,38 @@ export const Trivia = {
       // semi-secret force update of category file
       update: 8
     }
-    message = message.split(' ');
-    message[0] = message[0].toLowerCase();
-    if (comList[message[0]]){
+    query = query.split(' ');
+    query[0] = query[0].toLowerCase();
+    if (comList[query[0]]){
       // only activates if a case insensitive match is found
-      const opt = comList[message[0]];
-      message.splice(0,1);
-      message = message.join(' ');
-      gFunc.readFilePromise(fs, dataFile, false).then(data => {
+      const opt = comList[query[0]];
+      query.splice(0,1);
+      query = query.join(' ');
+      gFunc.readFilePromise(files.triviaData, false).then(data => {
         let triviaData = JSON.parse(data);
         switch (opt) {
           case 1:
-            this.start(fs, channel, triviaData, client, saveChatArray);
+            Trivia.start(channel, triviaData, client, saveChatArray);
             break;
 
           case 2:
-            this.chooseCat(fs, channel, triviaData, catFile, client, message);
+            Trivia.chooseCat(channel, triviaData, files.triviaCatFile, client, query);
             break;
 
           case 3:
-            this.changeDifficulty(fs, channel, triviaData, client, message);
+            Trivia.changeDifficulty(channel, triviaData, client, query);
             break;
 
           case 4:
-            this.changeType(fs, channel, triviaData, client, message);
+            Trivia.changeType(channel, triviaData, client, query);
             break;
 
           case 5:
-            this.changeTime(fs, channel, triviaData, client, message);
+            Trivia.changeTime(channel, triviaData, client, query);
             break;
             
           case 6:
-            this.showConfig(fs, channel, triviaData, catFile, client);
+            Trivia.showConfig(channel, triviaData, files.triviaCatFile, client);
             break;
 
           case 7:
@@ -156,7 +158,7 @@ export const Trivia = {
             
           case 8:
             client.say(channel, 'forcing category check/update');
-            this.getCat(fs, catFile, true);
+            Trivia.getCat(files.triviaCatFile, true);
             break;
         }
       }, error => {
@@ -164,14 +166,14 @@ export const Trivia = {
       }); 
     } else {
       // tries to be helpful and gives closest option
-      message = gFunc.closestObjectAttribute(message[0], comList);
+      query = gFunc.closestObjectAttribute(query[0], comList);
       let potentialComs = '';
       // potential overkill for formatting
-      for (let i = 0; i < message.length; i++) {
-        potentialComs += ('\'' + message[i][1] + '\'');
-        if (i < message.length - 2){
+      for (let i = 0; i < query.length; i++) {
+        potentialComs += ('\'' + query[i][1] + '\'');
+        if (i < query.length - 2){
           potentialComs += ', ';
-        } else if (i === message.length - 2) {
+        } else if (i === query.length - 2) {
           potentialComs += ', or ';
         }
       }
@@ -198,7 +200,7 @@ export const Trivia = {
     }
   },
 
-  start: function (fs, channel, triviaData, client, saveChatArray){
+  start: function (channel, triviaData, client, saveChatArray){
     let getTriviaURL = 'https://opentdb.com/api.php?amount=1';
     if (triviaData[channel].category !== -1) {
       getTriviaURL += '&category=' + triviaData[channel].category;
@@ -236,7 +238,7 @@ export const Trivia = {
             startMsg += 'True or False: ' + decodeURIComponent(result.results[0].question);
             client.say(channel, startMsg);
             setTimeout(() => {
-              const addMsg = this.evalAns(saveChatArray, objName, result.results[0].correct_answer);
+              const addMsg = Trivia.evalAns(saveChatArray, objName, result.results[0].correct_answer);
               client.say(channel, 'Correct answer was: ' + result.results[0].correct_answer + addMsg);
             }, triviaData[channel].time);
           } else {
@@ -259,7 +261,7 @@ export const Trivia = {
             startMsg += decodeURIComponent(result.results[0].question) + ' ' + addMsg;
             client.say(channel, startMsg);
             setTimeout(() => {
-              const addMsg = this.evalAns(saveChatArray, objName, letters[ans_placement]);
+              const addMsg = Trivia.evalAns(saveChatArray, objName, letters[ans_placement]);
               client.say(channel, 'Correct answer was: [' + letters[ans_placement] + ']: ' + decodeURIComponent(result.results[0].correct_answer) + addMsg);
             }, triviaData[channel].time);
           }
@@ -296,9 +298,9 @@ export const Trivia = {
   },
 
   // to choose a trivia category
-  chooseCat: function (fs, channel, triviaData, catFile, client, message){
+  chooseCat: function (channel, triviaData, catFile, client, message){
     // read category file
-    gFunc.readFilePromise(fs, catFile, false).then(data => {
+    gFunc.readFilePromise(catFile, false).then(data => {
       let triviaCat = JSON.parse(data);
       // only write file if a valid category has been entered
       let writeFile = false;
@@ -331,7 +333,7 @@ export const Trivia = {
         triviaData[channel].category = triviaCat.trivia_categories[message];
         const saveFile = triviaData.filePath;
         triviaData = JSON.stringify(triviaData);
-        gFunc.writeFilePromise(fs, saveFile, triviaData);
+        gFunc.writeFilePromise(saveFile, triviaData);
         client.say(channel, `trivia category changed to: ` + message);
       }
     }, error => {
@@ -340,7 +342,7 @@ export const Trivia = {
   },
   
   // function to change difficulty
-  changeDifficulty: function (fs, channel, triviaData, client, message){
+  changeDifficulty: function (channel, triviaData, client, message){
     // very similar to changing category
     // only write file if a valid category has been entered
     let writeFile = false;
@@ -377,12 +379,12 @@ export const Trivia = {
       triviaData[channel].difficulty = diff[message];
       const saveFile = triviaData.filePath;
       triviaData = JSON.stringify(triviaData);
-      gFunc.writeFilePromise(fs, saveFile, triviaData);
+      gFunc.writeFilePromise(saveFile, triviaData);
       client.say(channel, `trivia difficulty changed to: ` + message);
     }
   },
   
-  changeType: function (fs, channel, triviaData, client, message) {
+  changeType: function (channel, triviaData, client, message) {
     const types = {
       'boolean': 'boolean',
       truefalse: 'boolean',
@@ -396,7 +398,7 @@ export const Trivia = {
     triviaData[channel].type = message;
     const saveFile = triviaData.filePath;
     triviaData = JSON.stringify(triviaData);
-    gFunc.writeFilePromise(fs, saveFile, triviaData);
+    gFunc.writeFilePromise(saveFile, triviaData);
     if (message === -1) {
       message = 'any';
     } else if (message === 'boolean') {
@@ -407,18 +409,18 @@ export const Trivia = {
     client.say(channel, `trivia type changed to: ` + message);
   },
   
-  changeTime: function (fs, channel, triviaData, client, message) {
+  changeTime: function (channel, triviaData, client, message) {
     const inputTime = gFunc.stringToMsec(message)[0];
     triviaData[channel].time = inputTime;
     const saveFile = triviaData.filePath;
     triviaData = JSON.stringify(triviaData);
-    gFunc.writeFilePromise(fs, saveFile, triviaData);
+    gFunc.writeFilePromise(saveFile, triviaData);
     client.say(channel, `trivia answer time changed to: ` + inputTime/1000 + ' seconds');    
   },
   
-  showConfig: function (fs, channel, triviaData, catFile, client){
+  showConfig: function (channel, triviaData, catFile, client){
     // read category file
-    gFunc.readFilePromise(fs, catFile, false).then(data => {
+    gFunc.readFilePromise(catFile, false).then(data => {
       let triviaCat = JSON.parse(data);
       let msg = 'current config: category: ';
       // doing this the opposite direction as this config code is used less often (less checks with category file)

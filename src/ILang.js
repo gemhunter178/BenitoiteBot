@@ -52,26 +52,26 @@ export const InternetLang = {
   },
   
   // looks through tone_ind above and gives best results
-  searchToneInd: function (channel, client, message) {
-    message = message.toLowerCase();
-    message = message.replace(/\//g,'');
-    if (this.tone_ind[message]){
-      client.say(channel, '[inidcator found]: /' + message + ' means ' + this.tone_ind[message]);
+  searchToneInd: function (client, channel, user, query) {
+    query = query.toLowerCase();
+    query = query.replace(/\//g,'');
+    if (InternetLang.tone_ind[query]){
+      client.say(channel, '[inidcator found]: /' + query + ' means ' + InternetLang.tone_ind[query]);
       return;
     } else {
-      message = gFunc.closestObjectAttribute(message, this.tone_ind);
-      if (message.length === 1){
-        message = message[0][1];
-        client.say(channel, '[closest indicator known]: /' + message + ' means ' + this.tone_ind[message]);
+      query = gFunc.closestObjectAttribute(query, InternetLang.tone_ind);
+      if (query.length === 1){
+        query = query[0][1];
+        client.say(channel, '[closest indicator known]: /' + query + ' means ' + InternetLang.tone_ind[query]);
         return;
       } else {
         let indMsg = 'no indicator found, did you mean: ';
         // taken from triviaCommands.js
-        for (let i = 0; i < message.length; i++) {
-          indMsg += ('\'/' + message[i][1] + '\'');
-          if (i < message.length - 2){
+        for (let i = 0; i < query.length; i++) {
+          indMsg += ('\'/' + query[i][1] + '\'');
+          if (i < query.length - 2){
             indMsg += ', ';
-          } else if (i === message.length - 2) {
+          } else if (i === query.length - 2) {
             indMsg += ', or ';
           }
         }

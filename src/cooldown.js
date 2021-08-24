@@ -1,7 +1,12 @@
+import { prefix, defCommands } from './_defCommands';
+import { files } from './filePaths';
+import fs from 'fs';
+
 // implements the cooldown functionality
+'use strict';
 export const Cooldown = {
   // version number
-  version: '1.3.1',
+  version: '1.3.2',
   
   // default cooldowns
   // also a good list of all commands this currently has
@@ -28,12 +33,12 @@ export const Cooldown = {
       // initialize cooldown object for channels that don't have one
       if (!cooldownObject.hasOwnProperty(channel)){
         cooldownObject[channel] = {};
-        for (const command in this.default_cooldowns) {
-          cooldownObject[channel][command] = [this.default_cooldowns[command], 0];
+        for (const command in Cooldown.default_cooldowns) {
+          cooldownObject[channel][command] = [Cooldown.default_cooldowns[command], 0];
         }
       } 
     }
-    this.update(cooldownObject, channels);
+    Cooldown.update(cooldownObject, channels);
   },
   
   // adds cooldowns to new commands
@@ -41,7 +46,7 @@ export const Cooldown = {
     let needUpdate = false;
     if(!cooldownObject.hasOwnProperty('version')){
       needUpdate = true;
-    } else if (cooldownObject.version !== this.version) {
+    } else if (cooldownObject.version !== Cooldown.version) {
       needUpdate = true;
       // test for old version of cooldown file, if so rewrite.
       const splitVersion = cooldownObject.version.split('.');
@@ -57,23 +62,23 @@ export const Cooldown = {
       }
     }
     if(needUpdate) {
-      console.log('updating cooldown file to v' + this.version);
+      console.log('updating cooldown file to v' + Cooldown.version);
       for (let i = 0; i < channels.length ; i++) {
-        for ( const command in this.default_cooldowns ){
+        for ( const command in Cooldown.default_cooldowns ){
           if (!cooldownObject[channels[i]].hasOwnProperty(command)){
             //initialize as disabled
-            cooldownObject[channels[i]][command] = [-this.default_cooldowns[command], 0];
+            cooldownObject[channels[i]][command] = [-Cooldown.default_cooldowns[command], 0];
           }
         }
       }
-      cooldownObject.version = this.version;
+      cooldownObject.version = Cooldown.version;
     }
   },
   
   //eventually may need a funtion to remove old depreicated cooldowns.
   
   // saves the current working cooldown file
-  saveCooldownFile: function (data, fs, files){
+  saveCooldownFile: function (data){
     data = JSON.stringify(data);
     fs.writeFile(files.cooldown, data, (err) => {
       if (err) console.log(err);
@@ -85,6 +90,8 @@ export const Cooldown = {
   checkCooldown: function (channel, command, cooldownObject, time, allow){
     if (!allow) {
       return false;
+    } else if(!cooldownObject[channel][command]) {
+      throw new Error('cooldown attribute for ' + command + ' is missing');
     } else if (cooldownObject[channel][command][0] < 0) {
       return false;
     } else if (time - cooldownObject[channel][command][1] > cooldownObject[channel][command][0]) {
@@ -97,21 +104,21 @@ export const Cooldown = {
   },
   
   // command to parse message and change cooldown time if no syntax errors
-  changeCooldown: function (channel, message, client, cooldown, fs, files) {
-    let query = message.toLowerCase().split(' ');
-    if (query.length < 2) {
+  changeCooldown: function (client, channel, user, query, cooldown) {
+    query = query.toLowerCase().split(' ');
+    if (query.length < 1) {
       client.say(channel, `no command found. example: !!cd !!hello 1`);
-    } else if (query.length === 2) {
+    } else if (query.length === 1) {
       client.say(channel, `please space separate time (in seconds) and the command`);
     } else {
       let success = true;
       let time, command;
-      if (cooldown[channel][query[1]]){
-        command = query[1];
-        time = parseFloat(query[2]);
-      } else if (cooldown[channel][query[2]]){
-        command = query[2];
+      if (cooldown[channel][query[0]]){
+        command = query[0];
         time = parseFloat(query[1]);
+      } else if (cooldown[channel][query[1]]){
+        command = query[1];
+        time = parseFloat(query[0]);
       } else {
         success = false;
         client.say(channel, `could not find command! did you include the prefix?`);
@@ -128,34 +135,34 @@ export const Cooldown = {
           }
           cooldown[channel][command][0] = time;
           client.say(channel, command + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
-          this.saveCooldownFile(cooldown, fs, files);
+          Cooldown.saveCooldownFile(cooldown);
         }
       }
     }
   },
   
   // enable or disable a command based on a bool 'enable'
-  enable: function (channel, message, client, cooldown, fs, files, enable) {
+  enable: function (client, channel, user, query, combinedCd) {
     let newTime = 1;
     let updateMessage = ' enabled.';
-    if (!enable) {
+    if (!combinedCd[1]) {
       newTime = -1;
       updateMessage = ' disabled.';
     }
-    let query = message.toLowerCase().split(' ');
-    if (query.length < 2) {
-      client.say(channel, `no command found. example: !!disable !!hello`);
+    query = query.toLowerCase().split(' ');
+    if (query.length < 1) {
+      client.say(channel, `command needs a query (which command to enable/disable)`);
     } else {
-      if (cooldown[channel][query[1]]){
-        cooldown[channel][query[1]][0] = newTime * Math.abs(cooldown[channel][query[1]][0]);
-        client.say(channel, query[1] + updateMessage);
-        this.saveCooldownFile(cooldown, fs, files);
-      } else if (query[1] === 'all') {
-        for (const command in cooldown[channel]) {
-          cooldown[channel][command][0] = newTime * Math.abs(cooldown[channel][command][0]);
+      if (combinedCd[0][channel][query[0]]){
+        combinedCd[0][channel][query[0]][0] = newTime * Math.abs(combinedCd[0][channel][query[0]][0]);
+        client.say(channel, query[0] + updateMessage);
+        Cooldown.saveCooldownFile(combinedCd[0]);
+      } else if (query[0] === 'all') {
+        for (const command in combinedCd[0][channel]) {
+          combinedCd[0][channel][command][0] = newTime * Math.abs(combinedCd[0][channel][command][0]);
         }
         client.say(channel, `all commands` + updateMessage);
-        this.saveCooldownFile(cooldown, fs, files);
+        Cooldown.saveCooldownFile(combinedCd[0]);
       } else {
         client.say(channel, `could not find command! did you include the prefix?`);
       }

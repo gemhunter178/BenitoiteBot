@@ -1,12 +1,14 @@
+import fs from 'fs';
+import { files } from './filePaths';
 import { API_KEYS } from './constants';
 import { gFunc } from './_generalFunctions';
 
 // all functions utilizing wordsAPI
 export const WordsApi = {
   // check for/create file
-  init: function(fs, fileName, time) {
+  init: function(fileName, time) {
     let promise = new Promise ( (resolve) => {
-      gFunc.readFilePromise(fs, fileName, true).then( data => {
+      gFunc.readFilePromise(fileName, true).then( data => {
         data = JSON.parse(data);
         if (!data.time) {
           // initialize empty file
@@ -29,9 +31,9 @@ export const WordsApi = {
   },
   
   // check cached items
-  checkCache: function(fs, wordsData, word, arg) {
+  checkCache: function(wordsData, word, arg) {
     if(wordsData.cache[word][arg]) {
-      return data.cache[word][arg];
+      return wordsData.cache[word][arg];
     } else {
       return false;
     }
@@ -66,15 +68,15 @@ export const WordsApi = {
     }
   },
   
-  runCommand: function (fs, channel, wordsData, file, client, message) {
-    if (message.length === 0){
+  runCommand: function (client, channel, user, query, wordsData) {
+    if (query.length === 0){
       client.say(channel, 'define, powered by wordsAPI (#notspon). Please enter a query. Example -> \'!!define peanut butter\'');
       return;
     }
-    if (wordsData.cache[message]) {
+    if (wordsData.cache[query]) {
       // cache implementaion
-      console.log( message + ' found in cache');
-      this.disp(wordsData.cache[message], channel, client);
+      console.log( query + ' found in cache');
+      WordsApi.disp(wordsData.cache[query], channel, client);
     } else {
       // word and arg does not exist in cache
       if (Date.now() - wordsData.time > 3600000) {
@@ -84,7 +86,7 @@ export const WordsApi = {
       }
       if (wordsData.uses < 95) {
         // limit is 2500/day, using this for safety
-        message = '/words/' + message.replace(/\s/g, '%20') + '/definitions';
+        query = '/words/' + query.replace(/\s/g, '%20') + '/definitions';
         // taken from rapidapi:
         const http = require('https');
         
@@ -92,7 +94,7 @@ export const WordsApi = {
           'method': 'GET',
           'hostname': 'wordsapiv1.p.rapidapi.com',
           'port': null,
-          'path': message,
+          'path': query,
           'headers': {
             'x-rapidapi-key': API_KEYS['x-rapidapi-key'],
             'x-rapidapi-host': 'wordsapiv1.p.rapidapi.com',
@@ -122,8 +124,8 @@ export const WordsApi = {
           if(wordObj.word) {
             wordsData.cache[wordObj.word] = wordObj;
           }
-          this.disp(wordObj, channel, client);
-          gFunc.save(fs, wordsData, file);
+          WordsApi.disp(wordObj, channel, client);
+          gFunc.save(wordsData, files.wordsAPI);
         });
       } else {
         client.say(channel, 'maximum API requests reached, cannot retrieve more data this hour');

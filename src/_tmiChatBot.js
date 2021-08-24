@@ -1,6 +1,8 @@
+'use strict';
 import tmi from 'tmi.js';
 import fs from 'fs';
 import { gFunc } from './_generalFunctions';
+import { prefix, defCommands } from './_defCommands';
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants';
 import { files } from './filePaths';
 import { Cooldown } from './cooldown';
@@ -22,9 +24,30 @@ const client = new tmi.Client({
   channels: CHANNELS
 });
 
+// defining commands
+class Command {
+  constructor(name, exVar, runFunc, modOnly, desc) {
+    this.name = name;
+    this.regExp = new RegExp('^' + name + '\\b', 'i');
+    this.exVar = exVar;
+    this.run = runFunc;
+    this.modOnly = modOnly;
+    this.desc = desc;
+  }
+}
+
+let commandArray = [];
+for (let i = 0; i < defCommands.length; i++) {
+  const passName = prefix + defCommands[i].name;
+  commandArray.push(new Command(passName, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc));
+}
+console.log('done creating commands from _defCommands');
+
 let cooldown;
+
 // for privacy reasons, saved chats aren't stored in any file
 let saveChats = {};
+
 // read cooldown file has to be sync before everything else
 try {
   const data = fs.readFileSync(files.cooldown);
@@ -49,28 +72,48 @@ for (let i = 0; i < CHANNELS.length; i++) {
 } */
 
 // save created config above
-Cooldown.saveCooldownFile(cooldown, fs, files);
+Cooldown.saveCooldownFile(cooldown);
 
-// initialize wordsAPI object
-let wordsApiData;
-WordsApi.init(fs, files.wordsAPI, Date.now())
-.then ( data => {
-  if (data) {
-    wordsApiData = data;
-    gFunc.save(fs, wordsApiData, files.wordsAPI);
-  } else {
-    console.log('error in making wordsApiData object!');
-  }
-});
+
 
 // check if trivia categories needs updating
-Trivia.getCat(fs, files.triviaCatFile, false);
+Trivia.getCat(files.triviaCatFile, false);
 // initialize trivia files
-Trivia.initialize(fs, CHANNELS, files.triviaData);
+Trivia.initialize(CHANNELS, files.triviaData);
 
 // timer deletion implementation
 let timerObject = Timer.init(CHANNELS);
 
+// object to pass extra variables to object-generated commands
+const extraVar = {
+  cooldown: cooldown,
+  cdDisable: [cooldown, false],
+  cdEnable: [cooldown, true],
+  timerObject: timerObject,
+  saveChats: saveChats
+}
+
+// initialize wordsAPI object
+let wordsApiData;
+WordsApi.init(files.wordsAPI, Date.now())
+.then ( data => {
+  if (data) {
+    wordsApiData = data;
+    gFunc.save(wordsApiData, files.wordsAPI);
+    return wordsApiData;
+  } else {
+    console.log('error in making wordsApiData object!');
+    return false;
+  }
+}).then((result) => {
+  if(result) {
+    extraVar.wordsApiData = result;
+    console.log('successfully added wordsApiData to extraVar');
+  }
+});
+
+
+// CLIENT CONNECT + REACT TO MESSAGES HERE
 client.connect();
 
 client.on('message', (channel, user, message, self) => {
@@ -82,6 +125,7 @@ client.on('message', (channel, user, message, self) => {
   let isMod = user.mod || user['user-type'] === 'mod';
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
+  
   // Ignore messages from self.
   if (self) return;
   
@@ -98,130 +142,62 @@ client.on('message', (channel, user, message, self) => {
       }
     }
   }
+  
+  // commands past this must start with prefix (definied in _defCommands.js)
+  if (!message.startsWith(prefix)) return;
+  
+  // all commands currently defined in _defCommands.js
+  for (let i = 0; i < commandArray.length; i++) {
+    if (commandArray[i].regExp.test(message)) {
+      let query = message.replace(commandArray[i].regExp, '');
+      query = query.replace(/^\s+/, '');
+      let runCommand = false;
+      switch (commandArray[i].modOnly) {
+        case 0:
+          runCommand = Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, true)
+          break;
+        case 1:
+          try {
+            runCommand = Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, isModUp);
+          } catch {
+            // allows a no-cooldown mod only command
+            runCommand = isModUp;
+          }
+          break;
 
-  // commands past this must start with !
-  if (!message.startsWith('!')) return;
-  
-  // default command, sort of a !ping
-  if (message.toLowerCase() === '!!hello' && Cooldown.checkCooldown(channel, '!!hello', cooldown, current_time, true)) {
-    // "@user, heya!"
-    client.say(channel, `Heya, ` + user['display-name'] + `!`);
-  }
-  
-  // shut off bot (use only when necesssary)
-  if (message.toLowerCase() === '!!goodbye' && user.username === OWNER) {
-    const writeCooldown = JSON.stringify(cooldown);
-    gFunc.writeFilePromise(fs, files.cooldown, writeCooldown).then( pass => {
-      client.say(channel, `Alright, see you later!`);
-      console.log('bot terminated by user');
-      process.exit(0);
-    }, error => {
-      client.say(channel, 'error in writing cooldown file before stopping bot');
-    });
-  }
-  
-  // debugging and such
-  if (message.toLowerCase() === '!!logme' && Cooldown.checkCooldown(channel, '!!logme', cooldown, current_time, true)) {
-    // mostly for debug purposes
-    client.say(channel, user['display-name'] + ` has been logged on console`);
-    console.log(user);
-    console.log(isModUp);
-  }
-  
-  // command list
-  if (firstWord.toLowerCase() === '!!commands' && Cooldown.checkCooldown(channel, '!!commands', cooldown, current_time, true)) {
-    let commandmsg = [];
-    for (const commanditr in cooldown[channel]) {
-      if (cooldown[channel][commanditr][0] > 0) {
-        commandmsg.push(commanditr);
+        case 2:
+          runCommand = isBroadcaster;
+          break;
+
+        case -1:
+          if(user.username === OWNER) {
+            runCommand = true;
+          }
+          break;
+          
+        default:
+          //if not defined, do nothing (default is false)
+          break;
       }
-    }
-    commandmsg = gFunc.formatPrintOptions(commandmsg, false);
-    client.say(channel, 'the current enabled commands on this bot are: ' + commandmsg);
-  }
-  
-  // cooldown and command disabling
-  if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp) {
-    Cooldown.changeCooldown(channel, message, client, cooldown, fs, files);
-  }
-  
-  if (firstWord.toLowerCase() === '!!disable' && isModUp) {
-    Cooldown.enable(channel, message, client, cooldown, fs, files, false);
-  }
-  
-  if (firstWord.toLowerCase() === '!!enable' && isModUp) {
-    Cooldown.enable(channel, message, client, cooldown, fs, files, true);
-  }
-  
-  // the famous !fish commands
-  if (firstWord.toLowerCase() === '!!fish' && Cooldown.checkCooldown(channel, '!!fish', cooldown, current_time, true)) { 
-    FISH(files.fishDataFiles, fs, user, channel, client);
-  }
-  
-  if (firstWord.toLowerCase() === '!!fishstats' && Cooldown.checkCooldown(channel, '!!fishstats', cooldown, current_time, true)) {
-    FISH_STATS(files.fishDataFiles, fs, user, channel, client);
-  }
-  
-  // timer command
-  if (/^!!timer\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!timer', cooldown, current_time, isModUp)) {
-    Timer.addTimer(channel, message, client, timerObject);
-  }
-  
-  //delete last timer
-  if (/^!!deltimer\b/i.test(firstWord) && isModUp) {
-    Timer.delLastTimer(channel, client, timerObject);
-  }
-  
-  // codewords
-  if (/^!!codeword\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!codeword', cooldown, current_time, true)) {
-    CODEWORDGAME(files.codewordGameFile, fs, user, channel, client, message);
-  }
-  
-  // morse code
-  if (/^!!morse\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!morse', cooldown, current_time, true)) {
-    let query = message.replace(/^!+morse[\s]*/,'');
-    MORSE(user, channel, client, query);
-  }
-  
-  //convert
-  if (/^!!convert\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!convert', cooldown, current_time, true)) {
-    let query = message.replace(/^!+convert[\s]*/,'');
-    CONVERT(channel, client, query);
-  }
-  
-  //tone indicator search
-  if (/^!!tone\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!tone', cooldown, current_time, true)) {
-    let query = message.replace(/^!+tone[\s]*/,'');
-    InternetLang.searchToneInd(channel, client, query);
-  }
-
-  // wordsapi command
-  if (/^!!define\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!define', cooldown, current_time, isModUp)) { 
-    let query = message.replace(/^!+define[\s]*/,'');
-    if (API_KEYS['x-rapidapi-key']) {
-      WordsApi.runCommand(fs, channel, wordsApiData, files.wordsAPI, client, query);
-    } else {
-      client.say(channel, '!!words requires an API key for wordsAPI (#notspon) to function');
-    }
-  }
-
-  // trivia commands
-  if (/^!!trivia\b/i.test(firstWord) && Cooldown.checkCooldown(channel, '!!trivia', cooldown, current_time, isModUp)) { 
-    let query = message.replace(/^!+trivia[\s]*/,'');
-    Trivia.useCommand(fs, channel, files.triviaData, files.triviaCatFile, client, query, saveChats);
-  }
-  
-  // purge means ban everyone in the provided list, bans happen 1.5 seconds apart and will only work if bot is modded
-  // remove '&& false' if you want this command to be available.
-  if (firstWord === '!!purge' && isModUp && false) {
-    //future implementaion of not using so many setTimeout objects?
-    gFunc.readFilePromise(fs, './data/ban_list.json', false).then( ban_list => {
-      ban_list = JSON.parse(ban_list);
-      for (let i = 0; i < ban_list.length; i++) {
-        setTimeout( function() { client.say(channel, '/ban ' + ban_list[i]);}, 1500*i);
+      try {
+        // mods can always access a command's help
+        if (runCommand || isModUp) {
+          if (query === 'help' && commandArray[i].desc) {
+            client.say(channel, commandArray[i].desc)
+          } else if (runCommand) {
+            commandArray[i].run(client, channel, user, query, extraVar[commandArray[i].exVar]);
+          }
+        }
+      } catch (err){
+        console.error(err);
+        let addReason = '';
+        // to not flood chat
+        if (err.message.length < 100) {
+          addReason = ' [reason] -> ' + err.message;
+        }
+        client.say(channel, 'error running ' + commandArray[i].name + addReason);
       }
-    }, error => {
-      client.say(channel, 'no list found');
-    });
+      return;
+    }
   }
 });

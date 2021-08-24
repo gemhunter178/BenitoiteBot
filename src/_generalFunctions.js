@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 // file full of general functions used elsewhere
 export const gFunc = {
   readHttps: function (site) {
@@ -19,7 +21,7 @@ export const gFunc = {
     return promise;
   },
   
-  writeFilePromise: function (fs, fileName, data) {
+  writeFilePromise: function (fileName, data) {
     let promise = new Promise ((resolve, reject) => {
       fs.writeFile(fileName, data, (err) => {
         if (err) {
@@ -33,7 +35,7 @@ export const gFunc = {
   },
   
   // async verion that does not promise
-  save: function (fs, data, file){
+  save: function (data, file){
     data = JSON.stringify(data);
     fs.writeFile(file, data, (err) => {
       if (err) console.log(err);
@@ -42,7 +44,7 @@ export const gFunc = {
   },
   
   // returns a promise with the data in the file
-  readFilePromise: function (fs, fileName, createNew) {
+  readFilePromise: function (fileName, createNew) {
     let promise = new Promise ((resolve, reject) => {
       fs.readFile(fileName, 'utf8', (err, data) => {
         if (err) {

@@ -1,6 +1,6 @@
 import { gFunc } from './_generalFunctions';
 
-export function CONVERT(channel, client, text) {
+export function CONVERT(client, channel, user, text) {
   let msg;
   let helpTrg = 0;
   if (/\bhelp\b/i.test(text) || text.length === 0) {
