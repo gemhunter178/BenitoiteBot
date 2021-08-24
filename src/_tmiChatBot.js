@@ -25,19 +25,20 @@ const client = new tmi.Client({
 
 // defining commands
 class Command {
-  constructor(name, runFunc, defCooldown, modOnly) {
+  constructor(name, runFunc, defCooldown, modOnly, desc) {
     this.name = name;
     this.regExp = new RegExp('^' + name + '\\b', 'i');
     this.run = runFunc;
     this.defaultCooldown = defCooldown;
     this.modOnly = modOnly;
+    this.desc = desc;
   }
 }
 
 let commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
   const passName = prefix + defCommands[i].name;
-  commandArray.push(new Command(passName, defCommands[i].run, defCommands[i].cd, defCommands[i].mod));
+  commandArray.push(new Command(passName, defCommands[i].run, defCommands[i].cd, defCommands[i].mod, defCommands[i].desc));
 }
 
 let cooldown;
@@ -147,13 +148,21 @@ client.on('message', (channel, user, message, self) => {
           // do nothing
           break;
       }
-      if(Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, accessLvl)) {
-        let query = message.replace(commandArray[i].regExp, '');
-        try {
-          commandArray[i].run(client, channel, user, query);
-        } catch {
-          console.log('error running ' + commandArray[i].name + '!');
+      let query = message.replace(commandArray[i].regExp, '');
+      query = query.replace(/^\s+/, '');
+      try {
+        if (query === 'help') {
+          client.say(channel, commandArray[i].desc)
+        } else if (Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, accessLvl)) {
+            commandArray[i].run(client, channel, user, query);
         }
+      } catch (err){
+        console.error(err.message);
+        let addReason = '';
+        if (err.message.length < 100) {
+          addReason = ' [reason] -> ' + err.message;
+        }
+        client.say(channel, 'error running ' + commandArray[i].name + addReason);
       }
     }
   }
@@ -168,14 +177,6 @@ client.on('message', (channel, user, message, self) => {
     }, error => {
       client.say(channel, 'error in writing cooldown file before stopping bot');
     });
-  }
-  
-  // debugging and such
-  if (message.toLowerCase() === '!!logme' && Cooldown.checkCooldown(channel, '!!logme', cooldown, current_time, true)) {
-    // mostly for debug purposes
-    client.say(channel, user['display-name'] + ` has been logged on console`);
-    console.log(user);
-    console.log(isModUp);
   }
   
   // command list

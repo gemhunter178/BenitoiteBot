@@ -12,7 +12,18 @@ export const defCommands = [
     },
     cd: 1000,
     mod: 0,
-    desc: "default command, sort of a !ping. Bot says hi to you"
+    desc: 'default command, sort of a !ping. Bot says hi to you'
+  },
+  {
+    name: 'logme',
+    run: function(client, channel, user) {
+      // mostly for debug purposes
+      client.say(channel, user['display-name'] + ` has been logged on console`);
+      console.log(user);
+    },
+    cd: 1000,
+    mod: 0,
+    desc: 'displays contents of user object on console. Mostly for debugging purposes'
   },
   {
     name: 'test',
@@ -20,6 +31,7 @@ export const defCommands = [
       client.say(channel, 'object is working!');
     },
     cd: 1000,
-    mod: -1
+    mod: -1,
+    desc: 'a test command to test if this object file is working.'
   }
 ]

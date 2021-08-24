@@ -1,3 +1,5 @@
+import { prefix, defCommands } from './_defCommands';
+
 // implements the cooldown functionality
 export const Cooldown = {
   // version number
@@ -83,6 +85,9 @@ export const Cooldown = {
   
   // tests for cooldown, sets and returns true if command is available. else returns false
   checkCooldown: function (channel, command, cooldownObject, time, allow){
+    if(!cooldownObject[channel][command]) {
+      throw new Error('cooldown attribute for ' + command + ' is missing');
+    }
     if (!allow) {
       return false;
     } else if (cooldownObject[channel][command][0] < 0) {
