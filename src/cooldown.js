@@ -14,7 +14,6 @@ export const Cooldown = {
     '!!hello': 1000,
     '!!logme': 1000,
     '!!commands': 10000,
-    '!!cd': 1,
     '!!fish': 5000,
     '!!fishstats': 15000,
     '!!timer': 30000,
@@ -143,27 +142,27 @@ export const Cooldown = {
   },
   
   // enable or disable a command based on a bool 'enable'
-  enable: function (channel, message, client, cooldown, enable) {
+  enable: function (client, channel, user, query, combinedCd) {
     let newTime = 1;
     let updateMessage = ' enabled.';
-    if (!enable) {
+    if (!combinedCd[1]) {
       newTime = -1;
       updateMessage = ' disabled.';
     }
-    let query = message.toLowerCase().split(' ');
-    if (query.length < 2) {
-      client.say(channel, `no command found. example: !!disable !!hello`);
+    query = query.toLowerCase().split(' ');
+    if (query.length < 1) {
+      client.say(channel, `command needs a query (which command to enable/disable)`);
     } else {
-      if (cooldown[channel][query[1]]){
-        cooldown[channel][query[1]][0] = newTime * Math.abs(cooldown[channel][query[1]][0]);
-        client.say(channel, query[1] + updateMessage);
-        Cooldown.saveCooldownFile(cooldown);
-      } else if (query[1] === 'all') {
-        for (const command in cooldown[channel]) {
-          cooldown[channel][command][0] = newTime * Math.abs(cooldown[channel][command][0]);
+      if (combinedCd[0][channel][query[0]]){
+        combinedCd[0][channel][query[0]][0] = newTime * Math.abs(combinedCd[0][channel][query[0]][0]);
+        client.say(channel, query[0] + updateMessage);
+        Cooldown.saveCooldownFile(combinedCd[0]);
+      } else if (query[0] === 'all') {
+        for (const command in combinedCd[0][channel]) {
+          combinedCd[0][channel][command][0] = newTime * Math.abs(combinedCd[0][channel][command][0]);
         }
         client.say(channel, `all commands` + updateMessage);
-        Cooldown.saveCooldownFile(cooldown);
+        Cooldown.saveCooldownFile(combinedCd[0]);
       } else {
         client.say(channel, `could not find command! did you include the prefix?`);
       }

@@ -12,8 +12,7 @@ export const Timer = {
   },
   
   // adding a timer
-  addTimer: function(channel, message, client, timerObject) {
-    let query = message.replace(/^!+timer[\s]*/,'');
+  addTimer: function(client, channel, user, query, timerObject) {
     query = query.split(' ');
     let timeMin = parseFloat(query[0]);
     // to be added back if the next check fails
@@ -39,7 +38,7 @@ export const Timer = {
   },
   
   //delete last timer
-  delLastTimer: function(channel, client, timerObject) {
+  delLastTimer: function(client, channel, user, query, timerObject) {
     //remove any already done timers
     for (let i = 0; i < timerObject[channel].length; i++) {
       if (timerObject[channel][i]._destroyed) {

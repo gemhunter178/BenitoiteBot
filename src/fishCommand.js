@@ -9,7 +9,7 @@ export function FISH(client, channel, user) {
   //console.log(YearMonth);
   let fishData;
   let change = false;
-  let readFishFile = gFunc.readFilePromise(fs, files.fishDataFiles, true);
+  let readFishFile = gFunc.readFilePromise(files.fishDataFiles, true);
   readFishFile.then( result => {
     fishData = JSON.parse(result);
     let gaus = -5;
@@ -80,7 +80,7 @@ export function FISH(client, channel, user) {
     client.say(channel, fishoutput);
     if (change){
       const dataToWrite = JSON.stringify(fishData);
-      gFunc.writeFilePromise(fs, files.fishDataFiles, dataToWrite);
+      gFunc.writeFilePromise(files.fishDataFiles, dataToWrite);
     }
   }, error => {
     console.log('error reading fish file!');
@@ -92,7 +92,7 @@ export function FISH_STATS(client, channel, user) {
   const now = new Date();
   const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
   let fishData;
-  let readFishFile = gFunc.readFilePromise(fs, files.fishDataFiles, true);
+  let readFishFile = gFunc.readFilePromise(files.fishDataFiles, true);
   readFishFile.then( result => {
     fishData = JSON.parse(result);
     //message to chat later

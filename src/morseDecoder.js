@@ -1,14 +1,14 @@
-export function MORSE(user, channel, client, message){
-  if (message === ''){
-    message = `we're going to need something to translate...`;
-  } else if (message === 'help') {
-    message = `use plain text or '.', '-', and '_' (for spaces) as a query!`;
-  } else {
-    if(['.','-','_'].includes(message[0])){
+export function MORSE(client, channel, user, query){
+  if (query === ''){
+    query = `we're going to need something to translate...`;
+  } /* [moved help to command definitions] else if (query === 'help') {
+    query = `use plain text or '.', '-', and '_' (for spaces) as a query!`;
+  } */ else {
+    if(['.','-','_'].includes(query[0])){
       //probably a morse to word
       //handle when underscores aren't space seperated
-      message.replace(/_/g,' _ ');
-      message.replace(/\s+/g,' ');
+      query.replace(/_/g,' _ ');
+      query.replace(/\s+/g,' ');
       const toWord = {
         '.-': 'A',
         '-...': 'B',
@@ -49,16 +49,16 @@ export function MORSE(user, channel, client, message){
         _: ' ',
         '|': ' '
       };
-      message = message.split(' ');
-      for (let i = 0; i < message.length; i++){
-        if (toWord.hasOwnProperty(message[i])){
-          message[i] = toWord[message[i]];
+      query = query.split(' ');
+      for (let i = 0; i < query.length; i++){
+        if (toWord.hasOwnProperty(query[i])){
+          query[i] = toWord[query[i]];
         }
       }
-      message = 'text: ' + message.join('');
+      query = 'text: ' + query.join('');
     } else {
       //probably a word to morse
-      message = message.toUpperCase();
+      query = query.toUpperCase();
       const toMorse = {
         A: '.-',
         B: '-...',
@@ -98,18 +98,18 @@ export function MORSE(user, channel, client, message){
         0: '-----',
         ' ': '|'
       };
-      message = message.split('');
-      for (let i = 0; i < message.length; i++){
-        if (toMorse.hasOwnProperty(message[i])){
-          message[i] = toMorse[message[i]];
+      query = query.split('');
+      for (let i = 0; i < query.length; i++){
+        if (toMorse.hasOwnProperty(query[i])){
+          query[i] = toMorse[query[i]];
         }
       }
-      message = 'morse: ' + message.join(' ');
-      if (message.length > 500) {
-        message = message.slice(0,470);
-        message += '[exceeds char limit]';
+      query = 'morse: ' + query.join(' ');
+      if (query.length > 500) {
+        query = query.slice(0,470);
+        query += '[exceeds char limit]';
       }
     }
   }
-  client.say(channel, message);
+  client.say(channel, query);
 }

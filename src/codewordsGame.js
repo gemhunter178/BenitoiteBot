@@ -1,6 +1,8 @@
+import fs from 'fs';
+import { files } from './filePaths';
 import { gFunc } from './_generalFunctions';
 // code for the codewords game
-export function CODEWORDGAME(file, fs, user, channel, client, message) {
+export function CODEWORDGAME(client, channel, user, query) {
   
   function findNewWordHttps() {
     const promise = new Promise ((resolve,reject) => {
@@ -58,17 +60,22 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
       getNewWord(false);
     }
     client.say(channel, query);
-    gFunc.writeFilePromise(fs, file, JSON.stringify(cdewrd));
+    gFunc.writeFilePromise(files.codewordGameFile, JSON.stringify(cdewrd));
   }
   
   function getNewWord(testing) {
     const getWordPromise = findNewWordHttps();
     getWordPromise.then(result => {
       cdewrd[channel] = {};
-      cdewrd[channel].word = result;
+      if (result === 'help') {
+        // as 'codeword help' is reserved to explain the command
+        cdewrd[channel].word = 'helpless';
+      } else {
+        cdewrd[channel].word = result;
+      }
       cdewrd[channel].attempts = 0;
       try {
-        fs.writeFileSync(file, JSON.stringify(cdewrd));
+        fs.writeFileSync(files.codewordGameFile, JSON.stringify(cdewrd));
       } catch (err) {
         console.err(err);
       }
@@ -82,18 +89,17 @@ export function CODEWORDGAME(file, fs, user, channel, client, message) {
     });
   }
   
-  let query = message.replace(/^!+codeword\s*/,'');
   query = query.replace(/\s/,'');
   query = query.toLowerCase();
   let cdewrd;
   try {
-    const data = fs.readFileSync(file);
+    const data = fs.readFileSync(files.codewordGameFile);
     cdewrd = JSON.parse(data);
   } catch (err) {
     console.error(err);
     try {
-      fs.writeFileSync(file, '{}');
-      console.log(file + ' has been created');
+      fs.writeFileSync(files.codewordGameFile, '{}');
+      console.log(files.codewordGameFile + ' has been created');
       cdewrd = {};
     } catch (err) {
       console.error(err);
