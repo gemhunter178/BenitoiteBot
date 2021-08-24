@@ -1,3 +1,12 @@
+import { FISH , FISH_STATS } from './fishCommand';
+import { CODEWORDGAME } from './codewordsGame';
+import { MORSE } from './morseDecoder';
+import { CONVERT } from './convert';
+import { InternetLang } from './ILang';
+import { WordsApi } from './wordsAPI';
+import { Trivia } from './triviaCommands';
+import { Timer } from './timer';
+
 // in this case 'def' means default. list of all deafult commands and some data associated with them
 export const prefix = '!!';
 
@@ -24,6 +33,20 @@ export const defCommands = [
     cd: 1000,
     mod: 0,
     desc: 'displays contents of user object on console. Mostly for debugging purposes'
+  },
+  {
+    name: 'fish',
+    run: FISH,
+    cd: 5000,
+    mod: 0,
+    desc: 'The famous fish command that started the drive behind this bot.'
+  },
+  {
+    name: 'fishstats',
+    run: FISH_STATS,
+    cd: 15000,
+    mod: 0,
+    desc: 'Displays the current month\'s ' + prefix + 'fish records.'
   },
   {
     name: 'test',

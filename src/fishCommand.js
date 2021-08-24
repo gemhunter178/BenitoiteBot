@@ -1,12 +1,15 @@
 import { gFunc } from './_generalFunctions';
-export function FISH(fishDataFile, fs, user, channel, client) {
+import { files } from './filePaths';
+import fs from 'fs';
+
+export function FISH(client, channel, user) {
   //Changed a test of read/write to file to the new fish command
   const now = new Date();
   const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
   //console.log(YearMonth);
   let fishData;
   let change = false;
-  let readFishFile = gFunc.readFilePromise(fs, fishDataFile, true);
+  let readFishFile = gFunc.readFilePromise(fs, files.fishDataFiles, true);
   readFishFile.then( result => {
     fishData = JSON.parse(result);
     let gaus = -5;
@@ -77,19 +80,19 @@ export function FISH(fishDataFile, fs, user, channel, client) {
     client.say(channel, fishoutput);
     if (change){
       const dataToWrite = JSON.stringify(fishData);
-      gFunc.writeFilePromise(fs, fishDataFile, dataToWrite);
+      gFunc.writeFilePromise(fs, files.fishDataFiles, dataToWrite);
     }
   }, error => {
     console.log('error reading fish file!');
   });
 }
   
-export function FISH_STATS(fishDataFile, fs, user, channel, client) {
+export function FISH_STATS(client, channel, user) {
   //for now just read fish stats and output the month's records
   const now = new Date();
   const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
   let fishData;
-  let readFishFile = gFunc.readFilePromise(fs, fishDataFile, true);
+  let readFishFile = gFunc.readFilePromise(fs, files.fishDataFiles, true);
   readFishFile.then( result => {
     fishData = JSON.parse(result);
     //message to chat later

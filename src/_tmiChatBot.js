@@ -68,7 +68,7 @@ for (let i = 0; i < CHANNELS.length; i++) {
 } */
 
 // save created config above
-Cooldown.saveCooldownFile(cooldown, fs, files);
+Cooldown.saveCooldownFile(cooldown);
 
 // initialize wordsAPI object
 let wordsApiData;
@@ -193,24 +193,15 @@ client.on('message', (channel, user, message, self) => {
   
   // cooldown and command disabling
   if ((firstWord.toLowerCase() === '!!cd' || firstWord.toLowerCase() === '!!cooldown') && isModUp) {
-    Cooldown.changeCooldown(channel, message, client, cooldown, fs, files);
+    Cooldown.changeCooldown(channel, message, client, cooldown);
   }
   
   if (firstWord.toLowerCase() === '!!disable' && isModUp) {
-    Cooldown.enable(channel, message, client, cooldown, fs, files, false);
+    Cooldown.enable(channel, message, client, cooldown, false);
   }
   
   if (firstWord.toLowerCase() === '!!enable' && isModUp) {
-    Cooldown.enable(channel, message, client, cooldown, fs, files, true);
-  }
-  
-  // the famous !fish commands
-  if (firstWord.toLowerCase() === '!!fish' && Cooldown.checkCooldown(channel, '!!fish', cooldown, current_time, true)) { 
-    FISH(files.fishDataFiles, fs, user, channel, client);
-  }
-  
-  if (firstWord.toLowerCase() === '!!fishstats' && Cooldown.checkCooldown(channel, '!!fishstats', cooldown, current_time, true)) {
-    FISH_STATS(files.fishDataFiles, fs, user, channel, client);
+    Cooldown.enable(channel, message, client, cooldown, true);
   }
   
   // timer command

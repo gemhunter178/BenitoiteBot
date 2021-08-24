@@ -1,4 +1,6 @@
 import { prefix, defCommands } from './_defCommands';
+import { files } from './filePaths';
+import fs from 'fs';
 
 // implements the cooldown functionality
 export const Cooldown = {
@@ -75,7 +77,7 @@ export const Cooldown = {
   //eventually may need a funtion to remove old depreicated cooldowns.
   
   // saves the current working cooldown file
-  saveCooldownFile: function (data, fs, files){
+  saveCooldownFile: function (data){
     data = JSON.stringify(data);
     fs.writeFile(files.cooldown, data, (err) => {
       if (err) console.log(err);
@@ -102,7 +104,7 @@ export const Cooldown = {
   },
   
   // command to parse message and change cooldown time if no syntax errors
-  changeCooldown: function (channel, message, client, cooldown, fs, files) {
+  changeCooldown: function (channel, message, client, cooldown) {
     let query = message.toLowerCase().split(' ');
     if (query.length < 2) {
       client.say(channel, `no command found. example: !!cd !!hello 1`);
@@ -133,14 +135,14 @@ export const Cooldown = {
           }
           cooldown[channel][command][0] = time;
           client.say(channel, command + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
-          this.saveCooldownFile(cooldown, fs, files);
+          this.saveCooldownFile(cooldown);
         }
       }
     }
   },
   
   // enable or disable a command based on a bool 'enable'
-  enable: function (channel, message, client, cooldown, fs, files, enable) {
+  enable: function (channel, message, client, cooldown, enable) {
     let newTime = 1;
     let updateMessage = ' enabled.';
     if (!enable) {
@@ -154,13 +156,13 @@ export const Cooldown = {
       if (cooldown[channel][query[1]]){
         cooldown[channel][query[1]][0] = newTime * Math.abs(cooldown[channel][query[1]][0]);
         client.say(channel, query[1] + updateMessage);
-        this.saveCooldownFile(cooldown, fs, files);
+        this.saveCooldownFile(cooldown);
       } else if (query[1] === 'all') {
         for (const command in cooldown[channel]) {
           cooldown[channel][command][0] = newTime * Math.abs(cooldown[channel][command][0]);
         }
         client.say(channel, `all commands` + updateMessage);
-        this.saveCooldownFile(cooldown, fs, files);
+        this.saveCooldownFile(cooldown);
       } else {
         client.say(channel, `could not find command! did you include the prefix?`);
       }
