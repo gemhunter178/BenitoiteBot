@@ -1,6 +1,7 @@
 'use strict';
 import tmi from 'tmi.js';
 import fs from 'fs';
+import homoglyphSearch from 'homoglyph-search';
 import { gFunc } from './_generalFunctions';
 import { prefix, defCommands } from './_defCommands';
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants';
@@ -43,10 +44,11 @@ for (let i = 0; i < defCommands.length; i++) {
 }
 console.log('done creating commands from _defCommands');
 
-let cooldown;
-
 // for privacy reasons, saved chats aren't stored in any file
 let saveChats = {};
+
+// cooldown initialization
+let cooldown;
 
 // read cooldown file has to be sync before everything else
 try {
@@ -66,15 +68,8 @@ try {
 // initialize values for new channels
 Cooldown.init_new(cooldown, CHANNELS);
 
-/* DEPRECATED reset cooldown states in case edge cases arise
-for (let i = 0; i < CHANNELS.length; i++) {
-  Cooldown.resetCooldown(CHANNELS[i], cooldown);
-} */
-
 // save created config above
 Cooldown.saveCooldownFile(cooldown);
-
-
 
 // check if trivia categories needs updating
 Trivia.getCat(files.triviaCatFile, false);
@@ -92,6 +87,20 @@ const extraVar = {
   timerObject: timerObject,
   saveChats: saveChats
 }
+
+// checking for a banned words list
+let bannedWords;
+gFunc.readFilePromise(files.bannedWords, true).then(
+(result) => {
+  bannedWords = JSON.parse(result);
+  if(!bannedWords.words){
+    bannedWords.words = [];
+  }
+  extraVar.bannedWords = bannedWords;
+  gFunc.save(bannedWords, files.bannedWords);
+}, (reject) => {
+  console.log('error fetching banned words\n' + reject);
+});
 
 // initialize wordsAPI object
 let wordsApiData;
@@ -126,8 +135,34 @@ client.on('message', (channel, user, message, self) => {
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
   
-  // Ignore messages from self.
+  // Ignore messages from self
   if (self) return;
+  
+  if (bannedWords && false){ // in progress, try not to run in an actual setting yet
+    let contains = homoglyphSearch.search(message, bannedWords.words);
+    if (contains) {
+      let deleteMessage = false;
+      try {
+        testWordLoop:
+        for (let i = 0; i < contains.length; i++) {
+          const testAgainst = encodeURIComponent(contains[i].match);
+          const testWords = message.split(' ');
+          for (let j = 0; j < testWords.length; j++)
+            if (encodeURIComponent(testWords[j]) === testAgainst){
+              deleteMessage = true;
+              break testWordLoop;
+            }
+        }
+      } catch (err) {
+        // running some odd characters to try to break the system
+        console.log('banned word test tripped! ->' + err.message);
+        deleteMessage = true;
+      }
+      if (deleteMessage) {
+        client.say(channel, 'you can\'t say that!');
+      }
+    }
+  }
   
   // test if there are chats to be added into the temp chat array
   if (Object.keys(saveChats).length !== 0) {

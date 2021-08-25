@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "esm": "^3.2.25",
+    "homoglyph-search": "^1.2.1",
     "tmi.js": "^1.8.3",
     "twitch": "^4.6.4",
     "twitch-auth": "^4.6.4"

@@ -52,7 +52,7 @@ export const gFunc = {
           console.log(fileName + ' does not exist, or cannot be accessed.');
           // attempt to make file if createNew is true
           if (createNew) {
-            let writeNewFile = this.writeFilePromise(fs, fileName, '{}');
+            let writeNewFile = this.writeFilePromise(fileName, '{}');
             writeNewFile.then(result => { 
               console.log(fileName + ' created.');
               resolve('{}');
