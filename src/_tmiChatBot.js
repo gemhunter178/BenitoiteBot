@@ -79,13 +79,16 @@ Trivia.initialize(CHANNELS, files.triviaData);
 // timer deletion implementation
 let timerObject = Timer.init(CHANNELS);
 
+//purge permissions
+let allowPurge = {allow: false};
 // object to pass extra variables to object-generated commands
 const extraVar = {
   cooldown: cooldown,
   cdDisable: [cooldown, false],
   cdEnable: [cooldown, true],
   timerObject: timerObject,
-  saveChats: saveChats
+  saveChats: saveChats,
+  allowPurge: allowPurge
 }
 
 // checking for a banned words list

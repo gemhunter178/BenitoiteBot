@@ -20,8 +20,8 @@ export const prefix = '!!';
 /* - - - - - - - - - -
 - for reference, mod level -1 is bot_owner, 0 is everyone, 1 is mods only, 2 is broadcaster only
 - format for functionn args (from _tmiChatBot.js) -> (client, channel, user, query, extra variable) 
-!! Command cannot be named 'help' if you wish for it to be edited by cooldown commands.
-!! query === 'help' is reserved for explaining the command. bypass by making desc: null
+[WARN] Command cannot be named 'help' if you wish for it to be edited by cooldown commands.
+[WARN] query === 'help' is reserved for explaining the command. bypass by making desc: null
 - - - - - - - - - - */
 
 export const defCommands = [
@@ -180,25 +180,54 @@ export const defCommands = [
   },
   {
     name: 'purge',
-    run: function (client, channel) {
+    exVar: 'allowPurge',
+    run: function (client, channel, user, query, allowPurge) {
       // purge means ban everyone in the provided list, bans happen 1.5 seconds apart and will only work if bot is modded
-      // change false -> true if you want this command to be available.
-      if(false){
+      // if the owner of this bot does !!allowPurge anywhere the bot is active, this command is allowed for 5 minutes.
+      if(allowPurge.allow){
         //future implementaion of not using so many setTimeout objects?
         gFunc.readFilePromise('./data/ban_list.json', false).then( ban_list => {
           ban_list = JSON.parse(ban_list);
-          for (let i = 0; i < ban_list.length; i++) {
-            setTimeout( function() { client.say(channel, '/ban ' + ban_list[i]);}, 1500*i);
+          let banEndNum = parseInt(query);
+          if(!banEndNum){
+            banEndNum = ban_list.length;
           }
+          let i = 0;
+          setInterval(function() {
+            if (i === banEndNum){
+              clearInterval(this);
+            } else {
+              client.say(channel, '/ban ' + ban_list[i]);
+              i++;
+            }
+          }, 1500);
         }, error => {
           client.say(channel, 'no list found');
         });        
       } else {
-        client.say(channel, 'requires editing from the bot owner to enable for safety reasons');
+        client.say(channel, 'requires asking the bot owner to enable for safety reasons');
       }
     },
     mod: 1,
     desc: 'bans all users on a predefined list. Requires asking the bot owner to enable'
+  },
+  {
+    name: 'allowpurge',
+    exVar: 'allowPurge',
+    run: function(client, channel, user, query, allowPurge) {
+      if (/(false)|(stop)/i.test(query)){
+        client.say(channel, 'purge access revoked.')
+        allowPurge.allow = false;
+      } else {
+        allowPurge.allow = true;
+        client.say(channel, 'permission granted.')
+        setTimeout(function() {
+          allowPurge.allow = false;
+        }, 300000);
+      }
+    },
+    mod: -1,
+    desc: '[bot owner only] allows use of purge for 5 minutes. or user query \'false\' to end before 5 minutes'
   },
   {
     name: 'test',
