@@ -1,5 +1,5 @@
-import { gFunc } from './_generalFunctions';
-import { files } from './filePaths';
+import { gFunc } from './_generalFunctions.js';
+import { files } from './filePaths.js';
 import fs from 'fs';
 
 export function FISH(client, channel, user) {

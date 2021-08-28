@@ -1,15 +1,15 @@
-import { files } from './filePaths';
-import { OWNER, API_KEYS } from './constants';
-import { gFunc } from './_generalFunctions';
-import { Cooldown } from './cooldown';
-import { FISH , FISH_STATS } from './fishCommand';
-import { CODEWORDGAME } from './codewordsGame';
-import { MORSE } from './morseDecoder';
-import { CONVERT } from './convert';
-import { InternetLang } from './ILang';
-import { WordsApi } from './wordsAPI';
-import { Trivia } from './triviaCommands';
-import { Timer } from './timer';
+import { files } from './filePaths.js';
+import { OWNER, API_KEYS } from './constants.js';
+import { gFunc } from './_generalFunctions.js';
+import { Cooldown } from './cooldown.js';
+import { FISH , FISH_STATS } from './fishCommand.js';
+import { CODEWORDGAME } from './codewordsGame.js';
+import { MORSE } from './morseDecoder.js';
+import { CONVERT } from './convert.js';
+import { InternetLang } from './ILang.js';
+import { WordsApi } from './wordsAPI.js';
+import { Trivia } from './triviaCommands.js';
+import { Timer } from './timer.js';
 
 // in this case 'def' means default. list of all deafult commands and some data associated with them
 
@@ -222,6 +222,7 @@ export const defCommands = [
         allowPurge.allow = true;
         client.say(channel, 'permission granted.')
         setTimeout(function() {
+          console.log('purge permissions removed (if not yet already)');
           allowPurge.allow = false;
         }, 300000);
       }

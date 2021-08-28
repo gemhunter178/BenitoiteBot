@@ -1,4 +1,4 @@
-import { gFunc } from './_generalFunctions';
+import { gFunc } from './_generalFunctions.js';
 
 export function CONVERT(client, channel, user, text) {
   let msg;

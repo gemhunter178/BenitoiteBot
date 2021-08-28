@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { files } from './filePaths';
-import { gFunc } from './_generalFunctions';
+import { files } from './filePaths.js';
+import { gFunc } from './_generalFunctions.js';
 // code for the codewords game
 export function CODEWORDGAME(client, channel, user, query) {
   

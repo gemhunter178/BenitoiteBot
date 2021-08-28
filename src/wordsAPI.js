@@ -1,7 +1,7 @@
 import fs from 'fs';
-import { files } from './filePaths';
-import { API_KEYS } from './constants';
-import { gFunc } from './_generalFunctions';
+import { files } from './filePaths.js';
+import { API_KEYS } from './constants.js';
+import { gFunc } from './_generalFunctions.js';
 
 // all functions utilizing wordsAPI
 export const WordsApi = {

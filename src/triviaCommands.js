@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { files } from './filePaths';
-import { gFunc } from './_generalFunctions';
+import { files } from './filePaths.js';
+import { gFunc } from './_generalFunctions.js';
 // powered by https://opentdb.com/api_config.php
 // trivia command object with everything needed to make a working trivia game
 export const Trivia = {

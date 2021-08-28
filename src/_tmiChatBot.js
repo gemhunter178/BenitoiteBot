@@ -2,19 +2,19 @@
 import tmi from 'tmi.js';
 import fs from 'fs';
 import homoglyphSearch from 'homoglyph-search';
-import { gFunc } from './_generalFunctions';
-import { prefix, defCommands } from './_defCommands';
-import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants';
-import { files } from './filePaths';
-import { Cooldown } from './cooldown';
-import { FISH , FISH_STATS } from './fishCommand';
-import { CODEWORDGAME } from './codewordsGame';
-import { MORSE } from './morseDecoder';
-import { CONVERT } from './convert';
-import { InternetLang } from './ILang';
-import { WordsApi } from './wordsAPI';
-import { Trivia } from './triviaCommands';
-import { Timer } from './timer';
+import { gFunc } from './_generalFunctions.js';
+import { prefix, defCommands } from './_defCommands.js';
+import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants.js';
+import { files } from './filePaths.js';
+import { Cooldown } from './cooldown.js';
+import { FISH , FISH_STATS } from './fishCommand.js';
+import { CODEWORDGAME } from './codewordsGame.js';
+import { MORSE } from './morseDecoder.js';
+import { CONVERT } from './convert.js';
+import { InternetLang } from './ILang.js';
+import { WordsApi } from './wordsAPI.js';
+import { Trivia } from './triviaCommands.js';
+import { Timer } from './timer.js';
 
 const client = new tmi.Client({
   options: { debug: true },

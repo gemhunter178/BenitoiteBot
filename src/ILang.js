@@ -1,4 +1,4 @@
-import { gFunc } from './_generalFunctions';
+import { gFunc } from './_generalFunctions.js';
 
 // functions related to internet jargon and such
 export const InternetLang = {

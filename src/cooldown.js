@@ -1,5 +1,5 @@
-import { prefix, defCommands } from './_defCommands';
-import { files } from './filePaths';
+import { prefix, defCommands } from './_defCommands.js';
+import { files } from './filePaths.js';
 import fs from 'fs';
 
 // implements the cooldown functionality
