@@ -54,7 +54,7 @@ all <> enclosed variables must be filled in.
 | Variable | Fill in with |
 | - | - |
 | `<your client ID>` | the client id mentioned above |
-| `<your registered redirect URI>` | the URL listed in the same manage application page. In my example: 'http://localhost'|
+| `<your registered redirect URI>` | the URL listed in the same manage application page. In my example: `http://localhost`|
 | `<type>` | set this to `token` |
 | `<space-separated list of scopes>` | see [this page](https://dev.twitch.tv/docs/authentication#scopes) for a list of scopes. These are the scopes that the token will have access to. Try to limit it to whatever you actually need the bot to have access to. Insert pluses (+) between the scopes (see example below)|
 
@@ -87,6 +87,6 @@ Example content: `["user1", "example", "other_user"]`
 Do note the purge command is only allowed after the `OWNER` has run the `allowpurge` command in a chat the bot is currently in.
 
 ## Bot Reference Page
-A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/benitoitebot.html). 
+A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/) when finished. 
 
-A current available command list can be found there.
+A current available [command list](https://pentagonitestudios.com/benitoitebot/commands.html) can be found there.
