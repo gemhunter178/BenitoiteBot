@@ -17,3 +17,5 @@ src/constants.js
 .vs
 data/*.json
 package-lock.json
+data/Temp_Commands.js
+src/hiddenCommands.js

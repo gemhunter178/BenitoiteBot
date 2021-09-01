@@ -4,6 +4,7 @@ import fs from 'fs';
 import homoglyphSearch from 'homoglyph-search';
 import { gFunc } from './_generalFunctions.js';
 import { prefix, defCommands } from './_defCommands.js';
+import { hiddenCommands } from './hiddenCommands.js';
 import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants.js';
 import { files } from './filePaths.js';
 import { Cooldown } from './cooldown.js';
@@ -27,22 +28,66 @@ const client = new tmi.Client({
 
 // defining commands
 class Command {
-  constructor(name, exVar, runFunc, modOnly, desc) {
+  constructor(name, exVar, runFunc, modOnly, desc, functionList) {
     this.name = name;
     this.regExp = new RegExp('^' + name + '\\b', 'i');
     this.exVar = exVar;
-    this.run = runFunc;
+    if(typeof(runFunc) === 'string'){
+      this.run = functionList[runFunc];
+    } else {
+      this.run = runFunc;
+    }
     this.modOnly = modOnly;
-    this.desc = desc;
+    let description = '';
+    switch (modOnly) {
+        case 0:
+          // do nothing
+          break;
+        case 1:
+          description = '[MOD ONLY] ';
+          break;
+        case 2:
+          description = '[BROADCASTER ONLY] ';
+          break;
+        case -1:
+          description = '[BOT OWNER ONLY] ';
+          break;
+        default:
+          //if not defined, do nothing (default is false)
+          break;
+    }
+    description += desc;
+    this.desc = description;
   }
 }
 
-let commandArray = [];
+//list to not have to import everything over on _defCommands
+const functionList = {
+  CD_CHANGE: Cooldown.changeCooldown,
+  CD_ENABLE: Cooldown.enable,
+  WORDSAPI_DEFINE: WordsApi.runCommand,
+  FISH: FISH,
+  FISH_STATS: FISH_STATS,
+  CODEWORDGAME: CODEWORDGAME,
+  MORSE: MORSE,
+  CONVERT: CONVERT,
+  TONE: InternetLang.searchToneInd,
+  TRIVIA_COMMAND: Trivia.useCommand,
+  ADD_TIMER: Timer.addTimer,
+  DEL_TIMER: Timer.delLastTimer
+}
+
+const commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
   const passName = prefix + defCommands[i].name;
-  commandArray.push(new Command(passName, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc));
+  commandArray.push(new Command(passName, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc, functionList));
 }
 console.log('done creating commands from _defCommands');
+for (let i = 0; i < hiddenCommands.length; i++) {
+  const passName = prefix + hiddenCommands[i].name;
+  commandArray.push(new Command(passName, hiddenCommands[i].exVar, hiddenCommands[i].run, hiddenCommands[i].mod, hiddenCommands[i].desc, functionList));
+}
+console.log('done creating hidden commands');
 
 // for privacy reasons, saved chats aren't stored in any file
 let saveChats = {};
@@ -119,7 +164,7 @@ WordsApi.init(files.wordsAPI, Date.now())
   }
 }).then((result) => {
   if(result) {
-    extraVar.wordsApiData = result;
+    extraVar.wordsApiData = [API_KEYS["x-rapidapi-key"],result];
     console.log('successfully added wordsApiData to extraVar');
   }
 });

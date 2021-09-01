@@ -1,15 +1,5 @@
 import { files } from './filePaths.js';
-import { OWNER, API_KEYS } from './constants.js';
 import { gFunc } from './_generalFunctions.js';
-import { Cooldown } from './cooldown.js';
-import { FISH , FISH_STATS } from './fishCommand.js';
-import { CODEWORDGAME } from './codewordsGame.js';
-import { MORSE } from './morseDecoder.js';
-import { CONVERT } from './convert.js';
-import { InternetLang } from './ILang.js';
-import { WordsApi } from './wordsAPI.js';
-import { Trivia } from './triviaCommands.js';
-import { Timer } from './timer.js';
 
 // in this case 'def' means default. list of all deafult commands and some data associated with them
 
@@ -82,41 +72,41 @@ export const defCommands = [
   {
     name: 'cd',
     exVar: 'cooldown',
-    run: Cooldown.changeCooldown,
+    run: 'CD_CHANGE',
     mod: 1,
     desc: 'changes the cooldown of a command for the channel, in seconds. Example: \'' + prefix + 'cd ' + prefix + 'hello 10\''
   },
   {
     name: 'disable',
     exVar: 'cdDisable',
-    run: Cooldown.enable,
+    run: 'CD_ENABLE',
     mod: 1,
     desc: 'Disables a command for the channel. Example: \'' + prefix + 'disable ' + prefix + 'hello\''
   },
   {
     name: 'enable',
     exVar: 'cdEnable',
-    run: Cooldown.enable,
+    run: 'CD_ENABLE',
     mod: 1,
     desc: 'Enables a command for the channel. Example: \'' + prefix + 'enable ' + prefix + 'hello\''
   },
   {
     name: 'timer',
     exVar: 'timerObject',
-    run: Timer.addTimer,
+    run: 'ADD_TIMER',
     mod: 1,
     desc: 'adds a timer: \'' + prefix + 'timer [time in minutes] [message]\''
   },
   {
     name: 'deltimer',
     exVar: 'timerObject',
-    run: Timer.delLastTimer,
+    run: 'DEL_TIMER',
     mod: 1,
     desc: 'deletes most recently added timer'
   },
   {
     name: 'convert',
-    run: CONVERT,
+    run: 'CONVERT',
     cd: 10000,
     mod: 0,
     desc: null //convert already has it's own help function currently, might migrate here eventually
@@ -124,41 +114,35 @@ export const defCommands = [
   {
     name: 'define',
     exVar: 'wordsApiData',
-    run: function(client, channel, user, query, wordsApiData) {
-      if (API_KEYS['x-rapidapi-key']) {
-        WordsApi.runCommand(client, channel, user, query, wordsApiData);
-      } else {
-        client.say(channel, '!!words requires an API key for wordsAPI (#notspon) to function');
-      }
-    },
+    run: 'WORDSAPI_DEFINE',
     cd: 10000,
     mod: 1,
     desc: 'returns a definition of the word, powered by WordsApi (#notspon)'
   },
   {
     name: 'fish',
-    run: FISH,
+    run: 'FISH',
     cd: 5000,
     mod: 0,
     desc: 'The famous fish command that started the drive behind this bot.'
   },
   {
     name: 'fishstats',
-    run: FISH_STATS,
+    run: 'FISH_STATS',
     cd: 15000,
     mod: 0,
     desc: 'Displays the current month\'s ' + prefix + 'fish records.'
   },
   {
     name: 'morse',
-    run: MORSE,
+    run: 'MORSE',
     cd: 10000,
     mod: 0,
     desc: 'Converts to/from morse. From morse requires the query to start with \'.\' \'-\' or \'_\' ...or if asking: help -> .... . .-.. .--'
   },
   {
     name: 'codeword',
-    run: CODEWORDGAME,
+    run: 'CODEWORDGAME',
     cd: 5000,
     mod: 0,
     desc: 'Enter a query and try to find the codeword! example: codeword is "test" -> a query of "seat" would give 2 matching places (-e-t) and 1 other matching character (s)'
@@ -166,14 +150,14 @@ export const defCommands = [
   {
     name: 'trivia',
     exVar: 'saveChats',
-    run: Trivia.useCommand,
+    run: 'TRIVIA_COMMAND',
     cd: 1000,
     mod: 1,
     desc: 'trivia, powered by Open Trivia Database! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!'
   },
   {
     name: 'tone',
-    run: InternetLang.searchToneInd,
+    run: 'TONE',
     cd: 10000,
     mod: 0,
     desc: 'A tone indicator lookup based on toneindicators and tonetags on carrd co'
@@ -228,14 +212,6 @@ export const defCommands = [
       }
     },
     mod: -1,
-    desc: '[bot owner only] allows use of purge for 5 minutes. or user query \'false\' to end before 5 minutes'
-  },
-  {
-    name: 'test',
-    run: function(client, channel) {
-      client.say(channel, 'object is working!');
-    },
-    mod: -1,
-    desc: 'a test command to test if this object file is working.'
+    desc: 'allows use of purge for 5 minutes. or use query \'false\' to end before 5 minutes'
   }
 ]

@@ -56,7 +56,7 @@ export const InternetLang = {
     query = query.toLowerCase();
     query = query.replace(/\//g,'');
     if (InternetLang.tone_ind[query]){
-      client.say(channel, '[inidcator found]: /' + query + ' means ' + InternetLang.tone_ind[query]);
+      client.say(channel, '[indicator found]: /' + query + ' means ' + InternetLang.tone_ind[query]);
       return;
     } else {
       query = gFunc.closestObjectAttribute(query, InternetLang.tone_ind);
