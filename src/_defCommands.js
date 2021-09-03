@@ -3,15 +3,25 @@ import { gFunc } from './_generalFunctions.js';
 
 // in this case 'def' means default. list of all deafult commands and some data associated with them
 
-/* COOLDOWN FILE NOT SET UP TO CHANGE PREFIX CURRENTLY 
-(do not set to anything but '!!' if cooldown.js version is before v1.4) */
+/* [WARN] do not set to anything but '!!' if cooldown.js version is before v1.4 */
 export const prefix = '!!';
 
 /* - - - - - - - - - -
 - for reference, mod level -1 is bot_owner, 0 is everyone, 1 is mods only, 2 is broadcaster only
 - format for functionn args (from _tmiChatBot.js) -> (client, channel, user, query, extra variable) 
 [WARN] Command cannot be named 'help' if you wish for it to be edited by cooldown commands.
+[WARN] Command cannot be named 'all' as enable all has it reserved to enable/disable all commands
 [WARN] query === 'help' is reserved for explaining the command. bypass by making desc: null
+object variables: 
+{
+  name: [the name of the command, without the prefix]
+  exVar: [the name of the extra variable needed from extraVar in _tmiChatBot.js]
+  run: [function to run on activation of the command - if string, it will call the matching property in functionList on _tmiChatBot.js]
+  cd: [default cooldown, in milliseconds if none specified, it will permenantly be enabled]
+  cd_default: [boolean if the command should default be enabled or disabled]
+  mod: [user level required to use comamnd, see above]
+  desc: [description of the command when 'help' is used as a query]
+}
 - - - - - - - - - - */
 
 export const defCommands = [
@@ -22,6 +32,7 @@ export const defCommands = [
       client.say(channel, `Heya, ` + user['display-name'] + `!`);
     },
     cd: 1000,
+    cd_default: true,
     mod: 0,
     desc: 'default command, sort of a !ping. Bot says hi to you'
   },
@@ -33,6 +44,7 @@ export const defCommands = [
       console.log(user);
     },
     cd: 10000,
+    cd_default: false,
     mod: 0,
     desc: 'displays contents of user object on console. Mostly for debugging purposes',
   },
@@ -59,13 +71,14 @@ export const defCommands = [
       let commandmsg = [];
       for (const commanditr in cooldown[channel]) {
         if (cooldown[channel][commanditr][0] > 0) {
-          commandmsg.push(commanditr);
+          commandmsg.push(prefix + commanditr);
         }
       }
       commandmsg = gFunc.formatPrintOptions(commandmsg, false);
       client.say(channel, 'the current enabled commands on this bot are: ' + commandmsg);
     },
     cd: 1000,
+    cd_default: true,
     mod: 0,
     desc: 'lists all enabled commands on the channel (as long as within character limit)'
   },
@@ -94,6 +107,8 @@ export const defCommands = [
     name: 'timer',
     exVar: 'timerObject',
     run: 'ADD_TIMER',
+    cd: 10000,
+    cd_default: true,
     mod: 1,
     desc: 'adds a timer: \'' + prefix + 'timer [time in minutes] [message]\''
   },
@@ -108,6 +123,7 @@ export const defCommands = [
     name: 'convert',
     run: 'CONVERT',
     cd: 10000,
+    cd_default: false,
     mod: 0,
     desc: null //convert already has it's own help function currently, might migrate here eventually
   },
@@ -116,6 +132,7 @@ export const defCommands = [
     exVar: 'wordsApiData',
     run: 'WORDSAPI_DEFINE',
     cd: 10000,
+    cd_default: false,
     mod: 1,
     desc: 'returns a definition of the word, powered by WordsApi (#notspon)'
   },
@@ -123,6 +140,7 @@ export const defCommands = [
     name: 'fish',
     run: 'FISH',
     cd: 5000,
+    cd_default: false,
     mod: 0,
     desc: 'The famous fish command that started the drive behind this bot.'
   },
@@ -130,6 +148,7 @@ export const defCommands = [
     name: 'fishstats',
     run: 'FISH_STATS',
     cd: 15000,
+    cd_default: false,
     mod: 0,
     desc: 'Displays the current month\'s ' + prefix + 'fish records.'
   },
@@ -137,6 +156,7 @@ export const defCommands = [
     name: 'morse',
     run: 'MORSE',
     cd: 10000,
+    cd_default: false,
     mod: 0,
     desc: 'Converts to/from morse. From morse requires the query to start with \'.\' \'-\' or \'_\' ...or if asking: help -> .... . .-.. .--'
   },
@@ -144,6 +164,7 @@ export const defCommands = [
     name: 'codeword',
     run: 'CODEWORDGAME',
     cd: 5000,
+    cd_default: false,
     mod: 0,
     desc: 'Enter a query and try to find the codeword! example: codeword is "test" -> a query of "seat" would give 2 matching places (-e-t) and 1 other matching character (s)'
   },
@@ -152,6 +173,7 @@ export const defCommands = [
     exVar: 'saveChats',
     run: 'TRIVIA_COMMAND',
     cd: 1000,
+    cd_default: false,
     mod: 1,
     desc: 'trivia, powered by Open Trivia Database! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!'
   },
@@ -159,6 +181,7 @@ export const defCommands = [
     name: 'tone',
     run: 'TONE',
     cd: 10000,
+    cd_default: false,
     mod: 0,
     desc: 'A tone indicator lookup based on toneindicators and tonetags on carrd co'
   },

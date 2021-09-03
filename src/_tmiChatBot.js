@@ -28,9 +28,9 @@ const client = new tmi.Client({
 
 // defining commands
 class Command {
-  constructor(name, exVar, runFunc, modOnly, desc, functionList) {
+  constructor(prefix, name, exVar, runFunc, modOnly, desc, functionList) {
     this.name = name;
-    this.regExp = new RegExp('^' + name + '\\b', 'i');
+    this.regExp = new RegExp('^' + prefix + name + '\\b', 'i');
     this.exVar = exVar;
     if(typeof(runFunc) === 'string'){
       this.run = functionList[runFunc];
@@ -80,13 +80,11 @@ const functionList = {
 
 const commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
-  const passName = prefix + defCommands[i].name;
-  commandArray.push(new Command(passName, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc, functionList));
+  commandArray.push(new Command(prefix, defCommands[i].name, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc, functionList));
 }
 console.log('done creating commands from _defCommands');
 for (let i = 0; i < hiddenCommands.length; i++) {
-  const passName = prefix + hiddenCommands[i].name;
-  commandArray.push(new Command(passName, hiddenCommands[i].exVar, hiddenCommands[i].run, hiddenCommands[i].mod, hiddenCommands[i].desc, functionList));
+  commandArray.push(new Command(prefix, hiddenCommands[i].name, hiddenCommands[i].exVar, hiddenCommands[i].run, hiddenCommands[i].mod, hiddenCommands[i].desc, functionList));
 }
 console.log('done creating hidden commands');
 
