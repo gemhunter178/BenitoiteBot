@@ -22,12 +22,12 @@ Files in the `data` folder should be generated automatically, with the exception
 | `OAUTH_TOKEN` | a **string** starting with 'oauth:' and followed by the token
 | `BOT_USERNAME` | a **string** with the username the bot is attached to in Twitch |
 | `CHANNELS` | an **array of strings** on what channels the bot should join |
-| `OWNER` | a **string** denoting your username, as the 'owner' of the bot |
+| `OWNER` | a **string** denoting your twitch username, in all lowercase, as the 'owner' of the bot |
 | `API_KEYS` | an **object** with all the API Keys needed for certain commands. Do note omitting these will just disallow the functionality of some commands, but the bot can still run. Source of each key noted below|
 
 Do **not** share a filled out version of constants.js, though that should already be reflected in the .gitignore. Anyone with the OAuth token would have whatever scopes ('permissions') given to the bot, such as chatting as that user.
 
-Also in `src`, change `hiddenCommands.sample.js` to  `hiddenCommands.js`. This file works simlarly to `_defCommands.js` except it's not tracted by git. So, commands you do not wish others to see/use may be placed here. An example command is provided, though it's the same format as `_defCommands.js`.
+Also in `src`, change `hiddenCommands.sample.js` to  `hiddenCommands.js`. This file works simlarly to `_defCommands.js` except it's not tracked by git. So, commands you do not wish others to see/use may be placed here. An example command is provided, though it's the same format as `_defCommands.js`.
 
 #### Getting CLIENT_ID, and OAUTH_TOKEN
 To start, go to the [Twitch developer site](https://dev.twitch.tv/), sign in and go to your console (should be a button on the top right.) In your console, click the 'Applications' tab and hit the 'Register Your Application' button. 
@@ -84,7 +84,7 @@ If one would like to use the purge command provided from this bot to ban a list 
 
 Example content: `["user1", "example", "other_user"]`
 
-Do note the purge command is only allowed after the `OWNER` has run the `allowpurge` command in a chat the bot is currently in.
+Do note the purge command is only allowed after the `OWNER` has run the `allowpurge` command in a chat the bot is currently listening to.
 
 ## Bot Reference Page
 A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/) when finished. 

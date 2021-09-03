@@ -53,7 +53,8 @@ class Command {
           description = '[BOT OWNER ONLY] ';
           break;
         default:
-          //if not defined, do nothing (default is false)
+          // provides a debug
+          description = '[UNKNOWN USERLEVEL] ';
           break;
     }
     description += desc;
