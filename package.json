@@ -10,6 +10,7 @@
   "author": "Gem",
   "license": "ISC",
   "dependencies": {
+    "dayjs": "^1.10.6",
     "esm": "^3.2.25",
     "homoglyph-search": "^1.2.1",
     "tmi.js": "^1.8.3",

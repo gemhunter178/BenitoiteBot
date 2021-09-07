@@ -1,6 +1,7 @@
 'use strict';
 import tmi from 'tmi.js';
 import fs from 'fs';
+import dayjs from 'dayjs';
 import homoglyphSearch from 'homoglyph-search';
 import { gFunc } from './_generalFunctions.js';
 import { prefix, defCommands } from './_defCommands.js';
@@ -18,7 +19,7 @@ import { Trivia } from './triviaCommands.js';
 import { Timer } from './timer.js';
 
 const client = new tmi.Client({
-  options: { debug: true },
+  options: { debug: false },
   identity: {
     username: BOT_USERNAME,
     password: OAUTH_TOKEN
@@ -149,6 +150,19 @@ gFunc.readFilePromise(files.bannedWords, true).then(
   console.log('error fetching banned words\n' + reject);
 });
 
+// getting a list of known/verified? bots from FFZ
+let botList = [];
+gFunc.readHttps('https://api.frankerfacez.com/v1/badge/bot').then( (list) => {
+  botList = JSON.parse(list).users['2'];
+  if(botList) {
+    console.log('bot list successfully fetched from FFZ');
+  } else {
+    console.log('error in fetching bot list');
+  }
+}, (err) => {
+  console.error(err);
+});
+
 // initialize wordsAPI object
 let wordsApiData;
 WordsApi.init(files.wordsAPI, Date.now())
@@ -172,7 +186,23 @@ WordsApi.init(files.wordsAPI, Date.now())
 // CLIENT CONNECT + REACT TO MESSAGES HERE
 client.connect();
 
-client.on('message', (channel, user, message, self) => {
+setInterval(function() {
+  if(client.getChannels().length === CHANNELS.length){
+    console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] all channels connected -> ' + client.getChannels().join(' | '));
+    clearInterval(this);
+  }
+}, 500);
+
+// will also move this elsewhere eventually
+client.on('join', (channel, username, self) => {
+  
+  // gives users joining the channel
+  if(!botList.includes(username) && !self){
+    console.log('['+ dayjs(Date.now()).format('HH:mm:ss') + '] join: [' + channel + ']: ' + username);
+  }
+});
+
+client.on('chat', (channel, user, message, self) => {
   const current_time = Date.now();
   
   // messages that need to match only the first word
@@ -182,10 +212,12 @@ client.on('message', (channel, user, message, self) => {
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
   
-  // Ignore messages from self
-  if (self) return;
-  
-  if (bannedWords && false){ // in progress, try not to run in an actual setting yet
+  // Ignore messages from self, but log it
+  if (self) {
+    console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] msge: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
+    return;
+  }
+  /*if (bannedWords){ // in progress, try not to run in an actual setting yet. Also, should eventually move to a different location
     let contains = homoglyphSearch.search(message, bannedWords.words);
     if (contains) {
       let deleteMessage = false;
@@ -209,7 +241,7 @@ client.on('message', (channel, user, message, self) => {
         client.say(channel, 'you can\'t say that!');
       }
     }
-  }
+  } */
   
   // test if there are chats to be added into the temp chat array
   if (Object.keys(saveChats).length !== 0) {
@@ -231,6 +263,7 @@ client.on('message', (channel, user, message, self) => {
   // all commands currently defined in _defCommands.js
   for (let i = 0; i < commandArray.length; i++) {
     if (commandArray[i].regExp.test(message)) {
+      console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] cmnd: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
       let query = message.replace(commandArray[i].regExp, '');
       query = query.replace(/^\s+/, '');
       let runCommand = false;

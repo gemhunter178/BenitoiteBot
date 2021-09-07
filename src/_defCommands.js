@@ -1,7 +1,7 @@
 import { files } from './filePaths.js';
 import { gFunc } from './_generalFunctions.js';
 
-// in this case 'def' means default. list of all deafult commands and some data associated with them
+// in this case 'def' means default. list of all default commands and some data associated with them
 
 /* [WARN] do not set to anything but '!!' if cooldown.js version is before v1.4 */
 export const prefix = '!!';
@@ -28,7 +28,7 @@ export const defCommands = [
   {
     name: 'hello',
     run: function(client, channel, user) {
-      // "@user, heya!"
+      // "Heya, user!"
       client.say(channel, `Heya, ` + user['display-name'] + `!`);
     },
     cd: 1000,

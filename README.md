@@ -4,7 +4,7 @@ A twitch chatbot that was originally created to keep track of !fish records (lon
 Bot is still being improved and new commands are still in development!
 
 ## Getting Started
-Currently requires `esm`,`tmi.js`, and `homoglyph-search` libraries.
+Currently requires a few libraries installed through npm.
 If one does not have npm (Node package manager) click [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and follow the instructions for your operating system.
 
 Then just run:
@@ -22,7 +22,7 @@ Files in the `data` folder should be generated automatically, with the exception
 | `OAUTH_TOKEN` | a **string** starting with 'oauth:' and followed by the token
 | `BOT_USERNAME` | a **string** with the username the bot is attached to in Twitch |
 | `CHANNELS` | an **array of strings** on what channels the bot should join |
-| `OWNER` | a **string** denoting your twitch username, in all lowercase, as the 'owner' of the bot |
+| `OWNER` | a **string** denoting your twitch username, in all lowercase, as the 'owner' of the bot. This username would be able to use 'owner only commands' such as `goodbye` (which shuts off the bot) |
 | `API_KEYS` | an **object** with all the API Keys needed for certain commands. Do note omitting these will just disallow the functionality of some commands, but the bot can still run. Source of each key noted below|
 
 Do **not** share a filled out version of constants.js, though that should already be reflected in the .gitignore. Anyone with the OAuth token would have whatever scopes ('permissions') given to the bot, such as chatting as that user.
@@ -34,7 +34,7 @@ To start, go to the [Twitch developer site](https://dev.twitch.tv/), sign in and
 
 Name it however you like. 
 
-For the OAuth Redirect URL, enter a URL that you have access to, such as `http://localhost`.
+For the OAuth Redirect URL, enter `http://localhost`.
 
 For a Category, this is a 'Chat Bot' and let the site know you're not a robot.
 
@@ -54,9 +54,9 @@ all <> enclosed variables must be filled in.
 | Variable | Fill in with |
 | - | - |
 | `<your client ID>` | the client id mentioned above |
-| `<your registered redirect URI>` | the URL listed in the same manage application page. In my example: `http://localhost`|
+| `<your registered redirect URI>` | the URL listed in the same manage application page. Following my exmple: `http://localhost`|
 | `<type>` | set this to `token` |
-| `<space-separated list of scopes>` | see [this page](https://dev.twitch.tv/docs/authentication#scopes) for a list of scopes. These are the scopes that the token will have access to. Try to limit it to whatever you actually need the bot to have access to. Insert pluses (+) between the scopes (see example below)|
+| `<space-separated list of scopes>` | see [this page](https://dev.twitch.tv/docs/authentication#scopes) for a list of scopes. These are the scopes that the token will have access to. Try to limit it to whatever you actually need the bot to have access to. Insert pluses (+) between the scopes (see example below.) This bot currently needs `channel:moderate`, `chat:edit`, and `chat:read`|
 
 A filled in URL should look something like
 ```
