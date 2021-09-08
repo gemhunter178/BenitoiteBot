@@ -24,6 +24,7 @@ Files in the `data` folder should be generated automatically, with the exception
 | `CHANNELS` | an **array of strings** on what channels the bot should join |
 | `OWNER` | a **string** denoting your twitch username, in all lowercase, as the 'owner' of the bot. This username would be able to use 'owner only commands' such as `goodbye` (which shuts off the bot) |
 | `API_KEYS` | an **object** with all the API Keys needed for certain commands. Do note omitting these will just disallow the functionality of some commands, but the bot can still run. Source of each key noted below|
+| `BANREGEX` | a **regular expression object** to use in the autoban function. If one is not familiar with regular expressions, please leave this as-is. Autoban will ban anyone who's username returns true for `BANREGEX.test()` (very bad if done wrong)|
 
 Do **not** share a filled out version of constants.js, though that should already be reflected in the .gitignore. Anyone with the OAuth token would have whatever scopes ('permissions') given to the bot, such as chatting as that user.
 

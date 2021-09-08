@@ -236,5 +236,61 @@ export const defCommands = [
     },
     mod: -1,
     desc: 'allows use of purge for 5 minutes. or use query \'false\' to end before 5 minutes'
+  },
+  {
+    name: 'autoban',
+    exVar: 'autoban',
+    run: function(client, channel, user, query, autoban) {
+      if (query === 'on') {
+        // turn on autoban. Needs to also check the current users and ban any that don't pass
+        autoban[channel].enable = true;
+        client.say(channel, 'autoban active.');
+        const needToBan = [];
+        gFunc.readHttps('https://tmi.twitch.tv/group/user/' + channel.slice(1) + '/chatters').then( info => {
+          const users = JSON.parse(info).chatters.viewers;
+          if(typeof(users) === 'undefined') {
+            console.log('error in fetching users!');
+          }
+          gFunc.readFilePromise('./data/ban_list.json', false).then( ban_list => {
+            ban_list = JSON.parse(ban_list);
+            for (let userIndex = 0; userIndex < users.length; userIndex++) {
+              if (ban_list.includes(users[userIndex])) {
+                needToBan.push(users[userIndex]);
+              } else if (autoban.regex) {
+                if(autoban.regex.test(users[userIndex])) {
+                  needToBan.push(users[userIndex]);
+                }
+              }
+            }
+            let banIndex = 0;
+            (function banWithInterval() {
+              if (banIndex === needToBan.length) {
+                return;
+              } else {
+                const timeBetween = 1000 + Math.random() * 4269;
+                setTimeout(function() {
+                  //console.log('/ban ' + needToBan[banIndex]);
+                  client.say(channel, '/ban ' + needToBan[banIndex]);
+                  banIndex++;
+                  banWithInterval();
+                }, timeBetween);
+              }
+            }());
+          }, err => {
+            console.log('no ban list found for use in autoban');
+          });
+        }, err => {
+          console.error(err);
+        });
+      } else if (query === 'off') {
+        autoban[channel].enable = false;
+        client.say(channel, 'autoban deactivated.');
+      } else {
+        // incorrect or no query
+        client.say(channel, 'Automatically bans users provided a ban list (same as purge) and/or regex to test with. query \'on\' to turn on, \'off\' for off');
+      } 
+    },
+    mod: 1,
+    desc: 'enables/disables autobanning tool with on/off as query. Relies on same predefinied list as purge and some regex testing'
   }
 ]

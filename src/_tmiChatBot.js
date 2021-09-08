@@ -6,7 +6,7 @@ import homoglyphSearch from 'homoglyph-search';
 import { gFunc } from './_generalFunctions.js';
 import { prefix, defCommands } from './_defCommands.js';
 import { hiddenCommands } from './hiddenCommands.js';
-import { BOT_USERNAME , OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS } from './constants.js';
+import { BOT_USERNAME, OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS, BANREGEX } from './constants.js';
 import { files } from './filePaths.js';
 import { Cooldown } from './cooldown.js';
 import { FISH , FISH_STATS } from './fishCommand.js';
@@ -14,7 +14,7 @@ import { CODEWORDGAME } from './codewordsGame.js';
 import { MORSE } from './morseDecoder.js';
 import { CONVERT } from './convert.js';
 import { InternetLang } from './ILang.js';
-import { WordsApi } from './wordsAPI.js';
+import { WordsApi } from './engCommands.js';
 import { Trivia } from './triviaCommands.js';
 import { Timer } from './timer.js';
 
@@ -26,6 +26,11 @@ const client = new tmi.Client({
   },
   channels: CHANNELS
 });
+
+// to format logs easier
+function mkLog(type, channel) {
+  return '['+ dayjs(Date.now()).format('HH:mm:ss') + '] ' + type + ': [' + channel + ']: ';
+}
 
 // defining commands
 class Command {
@@ -124,8 +129,13 @@ Trivia.initialize(CHANNELS, files.triviaData);
 // timer deletion implementation
 let timerObject = Timer.init(CHANNELS);
 
-//purge permissions
+// purge permissions
 let allowPurge = {allow: false};
+// autoban
+let autoban = {regex: BANREGEX};
+for (let i = 0; i < CHANNELS.length; i++) {
+  autoban[CHANNELS[i]] = {enable: false};
+}
 // object to pass extra variables to object-generated commands
 const extraVar = {
   cooldown: cooldown,
@@ -133,7 +143,8 @@ const extraVar = {
   cdEnable: [cooldown, true],
   timerObject: timerObject,
   saveChats: saveChats,
-  allowPurge: allowPurge
+  allowPurge: allowPurge,
+  autoban: autoban
 }
 
 // checking for a banned words list
@@ -188,7 +199,7 @@ client.connect();
 
 setInterval(function() {
   if(client.getChannels().length === CHANNELS.length){
-    console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] all channels connected -> ' + client.getChannels().join(' | '));
+    console.log('['+ dayjs(Date.now()).format('HH:mm:ss') + '] all channels connected -> ' + client.getChannels().join(' | '));
     clearInterval(this);
   }
 }, 500);
@@ -197,9 +208,20 @@ setInterval(function() {
 client.on('join', (channel, username, self) => {
   
   // gives users joining the channel
-  if(!botList.includes(username) && !self){
-    console.log('['+ dayjs(Date.now()).format('HH:mm:ss') + '] join: [' + channel + ']: ' + username);
+  if (!self && autoban[channel].enable){
+    if (BANREGEX.test(username)) {
+      console.log(mkLog('aBan', channel) + username);
+      const randDelay = 500 + Math.random() * 1000;
+      setTimeout(function() {
+        console.log('/ban ' + username);
+      }, randDelay);
+    }
   }
+});
+
+// output notices
+client.on('notice', (channel, msgid, message) => {
+  console.log(mkLog('note', channel) + message);
 });
 
 client.on('chat', (channel, user, message, self) => {
@@ -214,7 +236,7 @@ client.on('chat', (channel, user, message, self) => {
   
   // Ignore messages from self, but log it
   if (self) {
-    console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] msge: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
+    console.log(mkLog('msge', channel) + '<' + user['display-name'] + '>: ' + message);
     return;
   }
   /*if (bannedWords){ // in progress, try not to run in an actual setting yet. Also, should eventually move to a different location

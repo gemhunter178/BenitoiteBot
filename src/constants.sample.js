@@ -6,3 +6,4 @@ export const OWNER = '<ADMIN_USERNAME>';
 export const API_KEYS = {
   "x-rapidapi-key": null
 }
+export const BANREGEX = null;

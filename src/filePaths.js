@@ -5,5 +5,6 @@ export const files = {
   codewordGameFile: './data/cdewrdFile.json',
   triviaCatFile: './data/triviaCat.json',
   triviaData: './data/triviaData.json',
-  wordsAPI: './data/words.json'
+  wordsAPI: './data/wordsAPI.json',
+  datamuseDef: './data/datamuseDef'
 }

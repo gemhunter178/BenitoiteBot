@@ -3,6 +3,11 @@ import { files } from './filePaths.js';
 import { API_KEYS } from './constants.js';
 import { gFunc } from './_generalFunctions.js';
 
+// commands that use datamuse: http://www.datamuse.com/api/
+export const datamuse = {
+  
+}
+
 // all functions utilizing wordsAPI
 export const WordsApi = {
   // check for/create file
