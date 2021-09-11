@@ -11,13 +11,13 @@ export const Trivia = {
     // resolves a bool of whether the file should be updated, cooldown of a day.
     let checkFile = new Promise ((resolve, reject) => {
       if (force) {
-        console.log('forcing trivia category update');
+        console.log(gFunc.mkLog('init', '%GENERAL') + 'forcing trivia category update');
         resolve(true);
       }
       fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
           // if no file exists
-          console.log('no trivia category file found, creating a new one');
+          console.log(gFunc.mkLog('init', '%GENERAL') + 'no trivia category file found, creating a new one');
           // attempt to make file later
           resolve(true);
         } else {
@@ -25,7 +25,7 @@ export const Trivia = {
           data = JSON.parse(data);
           // timeout for cache
           if (current_time - data.retrivalTime > 86400000) {
-            console.log('category file is more than a day old, refreshing.');
+            console.log(gFunc.mkLog('init', '%GENERAL') + 'category file is more than a day old, refreshing.');
             resolve(true);
           } else {
             resolve(false);
@@ -59,7 +59,7 @@ export const Trivia = {
           console.log(error);
         });
       } else {
-        console.log('using cached trivia categories');
+        console.log(gFunc.mkLog('init', '%GENERAL') + 'using cached trivia categories');
       }
     }, error => {
       console.log(error);

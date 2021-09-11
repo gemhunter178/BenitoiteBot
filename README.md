@@ -19,6 +19,9 @@ Files in the `data` folder should be generated automatically, with the exception
 | Variable | Expected content |
 | - | - |
 | `CLIENT_ID` | a **string** with the client id provided when registering a Twitch app. It's not currently required but will be important for future updates.|
+| `CLIENT_SECRET` | a **string** with the client secret provided in creating the application, alternatively, clicking the 'new secret' button.|
+| `LISTENER_SECRET` | a **random string**, preferably randomly generated, between 10 and 100 characters |
+| `APP_OAUTH_TOKEN` | s **string** that can be found by running `npm run getappoauth` and copying the `access_token` result. |
 | `OAUTH_TOKEN` | a **string** starting with 'oauth:' and followed by the token
 | `BOT_USERNAME` | a **string** with the username the bot is attached to in Twitch |
 | `CHANNELS` | an **array of strings** on what channels the bot should join |
@@ -30,7 +33,7 @@ Do **not** share a filled out version of constants.js, though that should alread
 
 Also in `src`, change `hiddenCommands.sample.js` to  `hiddenCommands.js`. This file works simlarly to `_defCommands.js` except it's not tracked by git. So, commands you do not wish others to see/use may be placed here. An example command is provided, though it's the same format as `_defCommands.js`.
 
-#### Getting CLIENT_ID, and OAUTH_TOKEN
+#### Getting CLIENT_ID, CLIENT_SECRET, and OAUTH_TOKEN
 To start, go to the [Twitch developer site](https://dev.twitch.tv/), sign in and go to your console (should be a button on the top right.) In your console, click the 'Applications' tab and hit the 'Register Your Application' button. 
 
 Name it however you like. 
@@ -42,6 +45,8 @@ For a Category, this is a 'Chat Bot' and let the site know you're not a robot.
 Once that is done, hit the 'Create' button.
 
 An application should have been created. to find the `CLIENT_ID`, click the 'Manage' button of the newly made application and it should be be in a filed named 'Client ID'.
+
+To get the `CLIENT_SECRET` one should be provided under the Client Secret section of the same page. If one is not present, click the 'new secret' button.
 
 To get an OAuth token, one can use the URL provided in 'OAuth implicit code flow' from [this Twitch devlopers page](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth):
 ```
@@ -86,6 +91,20 @@ If one would like to use the purge command provided from this bot to ban a list 
 Example content: `["user1", "example", "other_user"]`
 
 Do note the purge command is only allowed after the `OWNER` has run the `allowpurge` command in a chat the bot is currently listening to.
+
+### Event listener functionality
+
+In order to use the event listener, one must also have [ngrok](https://ngrok.com/download) and un-comment out the `module.export` lines with `'./_clearEventSub.js'` and `'./_eventListener.js'` in `index.js` to make it look like:
+
+```
+require = require('esm')(module/*, options*/);
+module.exports = require('./_tmiChatBot.js');
+setTimeout(function() {
+  module.exports = require('./_eventListener.js');
+}, 2500);
+
+```
+
 
 ## Bot Reference Page
 A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/) when finished. 

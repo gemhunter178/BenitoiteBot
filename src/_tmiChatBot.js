@@ -18,7 +18,7 @@ import { WordsApi } from './engCommands.js';
 import { Trivia } from './triviaCommands.js';
 import { Timer } from './timer.js';
 
-const client = new tmi.Client({
+export const client = new tmi.Client({
   options: { debug: false },
   identity: {
     username: BOT_USERNAME,
@@ -26,11 +26,6 @@ const client = new tmi.Client({
   },
   channels: CHANNELS
 });
-
-// to format logs easier
-function mkLog(type, channel) {
-  return '['+ dayjs(Date.now()).format('HH:mm:ss') + '] ' + type + ': [' + channel + ']: ';
-}
 
 // defining commands
 class Command {
@@ -88,11 +83,11 @@ const commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
   commandArray.push(new Command(prefix, defCommands[i].name, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc, functionList));
 }
-console.log('done creating commands from _defCommands');
+console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating commands from _defCommands');
 for (let i = 0; i < hiddenCommands.length; i++) {
   commandArray.push(new Command(prefix, hiddenCommands[i].name, hiddenCommands[i].exVar, hiddenCommands[i].run, hiddenCommands[i].mod, hiddenCommands[i].desc, functionList));
 }
-console.log('done creating hidden commands');
+console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating hidden commands');
 
 // for privacy reasons, saved chats aren't stored in any file
 let saveChats = {};
@@ -105,10 +100,10 @@ try {
   const data = fs.readFileSync(files.cooldown);
   cooldown = JSON.parse(data);
 } catch (err) {
-  console.log('cooldown file not found, generating a new one');
+  console.log(gFunc.mkLog('init', '%GENERAL') + 'cooldown file not found, generating a new one');
   try {
     fs.writeFileSync(files.cooldown, '{}');
-    console.log(files.cooldown + ' has been created');
+    console.log(gFunc.mkLog('init', '%GENERAL') + files.cooldown + ' has been created');
     cooldown = {};
   } catch (err) {
     console.error(err);
@@ -137,7 +132,7 @@ for (let i = 0; i < CHANNELS.length; i++) {
   autoban[CHANNELS[i]] = {enable: false};
 }
 // object to pass extra variables to object-generated commands
-const extraVar = {
+export const extraVar = {
   cooldown: cooldown,
   cdDisable: [cooldown, false],
   cdEnable: [cooldown, true],
@@ -158,7 +153,7 @@ gFunc.readFilePromise(files.bannedWords, true).then(
   extraVar.bannedWords = bannedWords;
   gFunc.save(bannedWords, files.bannedWords);
 }, (reject) => {
-  console.log('error fetching banned words\n' + reject);
+  console.log(gFunc.mkLog('init', '%GENERAL') + 'error fetching banned words\n' + reject);
 });
 
 // getting a list of known/verified? bots from FFZ
@@ -166,9 +161,9 @@ let botList = [];
 gFunc.readHttps('https://api.frankerfacez.com/v1/badge/bot').then( (list) => {
   botList = JSON.parse(list).users['2'];
   if(botList) {
-    console.log('bot list successfully fetched from FFZ');
+    console.log(gFunc.mkLog('init', '%GENERAL') + 'bot list successfully fetched from FFZ');
   } else {
-    console.log('error in fetching bot list');
+    console.log(gFunc.mkLog('init', '%GENERAL') + 'error in fetching bot list');
   }
 }, (err) => {
   console.error(err);
@@ -183,13 +178,13 @@ WordsApi.init(files.wordsAPI, Date.now())
     gFunc.save(wordsApiData, files.wordsAPI);
     return wordsApiData;
   } else {
-    console.log('error in making wordsApiData object!');
+    console.log(gFunc.mkLog('init', '%GENERAL') + 'error in making wordsApiData object!');
     return false;
   }
 }).then((result) => {
   if(result) {
     extraVar.wordsApiData = [API_KEYS["x-rapidapi-key"],result];
-    console.log('successfully added wordsApiData to extraVar');
+    console.log(gFunc.mkLog('init', '%GENERAL') + 'successfully added wordsApiData to extraVar');
   }
 });
 
@@ -199,21 +194,29 @@ client.connect();
 
 setInterval(function() {
   if(client.getChannels().length === CHANNELS.length){
-    console.log('['+ dayjs(Date.now()).format('HH:mm:ss') + '] all channels connected -> ' + client.getChannels().join(' | '));
+    console.log(gFunc.mkLog('init', '%GENERAL') + 'all channels connected -> ' + client.getChannels().join(' | '));
     clearInterval(this);
   }
 }, 500);
 
 // will also move this elsewhere eventually
 client.on('join', (channel, username, self) => {
-  
   // gives users joining the channel
-  if (!self && autoban[channel].enable){
+
+  //'penguin' autoban feature
+  if (!self && autoban[channel].enable && BANREGEX){
     if (BANREGEX.test(username)) {
-      console.log(mkLog('aBan', channel) + username);
-      const randDelay = 500 + Math.random() * 1000;
+      console.log(gFunc.mkLog('aBan', channel) + username);
+      gFunc.readFilePromise(files.banList, false).then( ban_list => {
+        ban_list = JSON.parse(ban_list);
+        ban_list.unshift(username);
+        gFunc.save(ban_list, files.banList);
+      }, reject => {
+        console.log(reject);
+      });
+      const randDelay = 1500 + Math.random() * 10000;
       setTimeout(function() {
-        console.log('/ban ' + username);
+        client.say(channel, '/ban ' + username);
       }, randDelay);
     }
   }
@@ -221,22 +224,22 @@ client.on('join', (channel, username, self) => {
 
 // output notices
 client.on('notice', (channel, msgid, message) => {
-  console.log(mkLog('note', channel) + message);
+  console.log(gFunc.mkLog('note', channel) + message);
 });
 
 client.on('chat', (channel, user, message, self) => {
   const current_time = Date.now();
-  
+
   // messages that need to match only the first word
   let firstWord = message.split(' ')[0];
   // mod only stuff
   let isMod = user.mod || user['user-type'] === 'mod';
   let isBroadcaster = channel.slice(1) === user.username;
   let isModUp = isMod || isBroadcaster;
-  
+
   // Ignore messages from self, but log it
   if (self) {
-    console.log(mkLog('msge', channel) + '<' + user['display-name'] + '>: ' + message);
+    console.log(gFunc.mkLog('msge', channel) + '<' + user['display-name'] + '>: ' + message);
     return;
   }
   /*if (bannedWords){ // in progress, try not to run in an actual setting yet. Also, should eventually move to a different location
@@ -264,7 +267,7 @@ client.on('chat', (channel, user, message, self) => {
       }
     }
   } */
-  
+
   // test if there are chats to be added into the temp chat array
   if (Object.keys(saveChats).length !== 0) {
     // [debug] console.log(saveChats);
@@ -278,10 +281,10 @@ client.on('chat', (channel, user, message, self) => {
       }
     }
   }
-  
+
   // commands past this must start with prefix (definied in _defCommands.js)
   if (!message.startsWith(prefix)) return;
-  
+
   // all commands currently defined in _defCommands.js
   for (let i = 0; i < commandArray.length; i++) {
     if (commandArray[i].regExp.test(message)) {
@@ -311,7 +314,7 @@ client.on('chat', (channel, user, message, self) => {
             runCommand = true;
           }
           break;
-          
+
         default:
           //if not defined, do nothing (default is false)
           break;

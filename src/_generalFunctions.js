@@ -1,4 +1,5 @@
 import fs from 'fs';
+import dayjs from 'dayjs';
 
 // file full of general functions used elsewhere
 export const gFunc = {
@@ -27,19 +28,19 @@ export const gFunc = {
         if (err) {
           reject(err);
         } else {
-          resolve(fileName + ' updated.');
+          resolve(gFunc.mkLog('init', '%GENERAL') + fileName + ' updated.');
         }
       });
     });
     return promise;
   },
   
-  // async verion that does not promise
+  // async verion that does not promise. data in original form, not stringified please
   save: function (data, file){
     data = JSON.stringify(data);
     fs.writeFile(file, data, (err) => {
       if (err) console.log(err);
-      else console.log(file + ' saved');
+      else console.log(gFunc.mkLog('init', '%GENERAL') + file + ' saved');
     });
   },
   
@@ -49,12 +50,12 @@ export const gFunc = {
       fs.readFile(fileName, 'utf8', (err, data) => {
         if (err) {
           // if no file exists
-          console.log(fileName + ' does not exist, or cannot be accessed.');
+          console.log(gFunc.mkLog('!err', 'ERROR') + fileName + ' does not exist, or cannot be accessed.');
           // attempt to make file if createNew is true
           if (createNew) {
             let writeNewFile = this.writeFilePromise(fileName, '{}');
             writeNewFile.then(result => { 
-              console.log(fileName + ' created.');
+              console.log(gFunc.mkLog('init', '%GENERAL') + fileName + ' created.');
               resolve('{}');
             }, error => {
               reject(error);
@@ -202,5 +203,10 @@ export const gFunc = {
       }
       return returnString;
     }
+  },
+  
+  // to format logs easier
+  mkLog: function (type, channel) {
+    return '['+ dayjs(Date.now()).format('HH:mm:ss') + '] ' + type + ': [' + channel + ']: ';
   }
 }

@@ -193,7 +193,7 @@ export const defCommands = [
       // if the owner of this bot does !!allowPurge anywhere the bot is active, this command is allowed for 5 minutes.
       if(allowPurge.allow){
         //future implementaion of not using so many setTimeout objects?
-        gFunc.readFilePromise('./data/ban_list.json', false).then( ban_list => {
+        gFunc.readFilePromise(files.banList, false).then( ban_list => {
           ban_list = JSON.parse(ban_list);
           let banEndNum = parseInt(query);
           if(!banEndNum){
@@ -229,7 +229,7 @@ export const defCommands = [
         allowPurge.allow = true;
         client.say(channel, 'permission granted.')
         setTimeout(function() {
-          console.log('purge permissions removed (if not yet already)');
+          console.log('purge permissions revoked (if not yet already)');
           allowPurge.allow = false;
         }, 300000);
       }
@@ -238,20 +238,20 @@ export const defCommands = [
     desc: 'allows use of purge for 5 minutes. or use query \'false\' to end before 5 minutes'
   },
   {
-    name: 'autoban',
+    name: 'penguin',
     exVar: 'autoban',
     run: function(client, channel, user, query, autoban) {
-      if (query === 'on') {
+      if (autoban[channel].enable === false) {
         // turn on autoban. Needs to also check the current users and ban any that don't pass
         autoban[channel].enable = true;
-        client.say(channel, 'autoban active.');
+        client.say(channel, 'the penguin is HERE. 🐧');
         const needToBan = [];
         gFunc.readHttps('https://tmi.twitch.tv/group/user/' + channel.slice(1) + '/chatters').then( info => {
           const users = JSON.parse(info).chatters.viewers;
           if(typeof(users) === 'undefined') {
             console.log('error in fetching users!');
           }
-          gFunc.readFilePromise('./data/ban_list.json', false).then( ban_list => {
+          gFunc.readFilePromise(files.banList, false).then( ban_list => {
             ban_list = JSON.parse(ban_list);
             for (let userIndex = 0; userIndex < users.length; userIndex++) {
               if (ban_list.includes(users[userIndex])) {
@@ -277,20 +277,20 @@ export const defCommands = [
               }
             }());
           }, err => {
-            console.log('no ban list found for use in autoban');
+            console.log('no list found, sorry');
           });
         }, err => {
           console.error(err);
         });
-      } else if (query === 'off') {
-        autoban[channel].enable = false;
-        client.say(channel, 'autoban deactivated.');
       } else {
+        autoban[channel].enable = false;
+        client.say(channel, 'penguin has left...');
+      } /*else {
         // incorrect or no query
-        client.say(channel, 'Automatically bans users provided a ban list (same as purge) and/or regex to test with. query \'on\' to turn on, \'off\' for off');
-      } 
+        client.say(channel, 'Toggle to have the bouncer check out who\'s coming in');
+      } */
     },
     mod: 1,
-    desc: 'enables/disables autobanning tool with on/off as query. Relies on same predefinied list as purge and some regex testing'
+    desc: 'Toggle to have a penguin bouncer check out who\'s coming in against the purge list and a regex'
   }
 ]
