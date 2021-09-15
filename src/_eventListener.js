@@ -29,7 +29,7 @@ const main = async function() {
       } else {
         reject('listener creation failed');
       }
-      console.log(gFunc.mkLog('init', '%GENERAL') + 'event listener has been set up.');
+      console.log(gFunc.mkLog('init', '%EvntSub') + 'event listener has been set up.');
     }, 2500);
   });
   setupListener.then(listener => {
@@ -74,18 +74,22 @@ const main = async function() {
         userIDs[data.data[i].id] = data.data[i].login;
         rawIDs.push(data.data[i].id)
       }
-      console.log(gFunc.mkLog('init', '%GENERAL' ) + 'starting to listen to follows');
+      console.log(gFunc.mkLog('init', '%EvntSub' ) + 'starting to listen to follows');
       let i = 0;
       for (const user in userIDs) {
         if( i < CHANNELS.length ) {
           followerListener[user] = listener.subscribeToChannelFollowEvents(user, e => {
-            if(BANREGEX.test(e.userName)){
-              console.log(gFunc.mkLog('aBan', userIDs[user]) + e.userName);
-              if (extraVar.autoban['#' + userIDs[user]].enable){
-                const randTime = 250 + Math.random() * 1000;
-                setTimeout(function() {
-                  client.say('#' + userIDs[user], '/ban ' + e.userName);
-                }, randTime);
+            if(BANREGEX) {
+              if(BANREGEX.test(e.userName)){
+                console.log(gFunc.mkLog('aBan', userIDs[user]) + e.userName);
+                if (extraVar.autoban['#' + userIDs[user]].enable){
+                  const randTime = 420 + Math.random() * 1069;
+                  setTimeout(function() {
+                    client.say('#' + userIDs[user], '/ban ' + e.userName);
+                  }, randTime);
+                }
+              } else {
+                console.log(gFunc.mkLog('fllw', userIDs[user]) + e.userName);
               }
             } else {
               console.log(gFunc.mkLog('fllw', userIDs[user]) + e.userName);

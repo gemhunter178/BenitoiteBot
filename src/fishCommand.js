@@ -83,7 +83,7 @@ export function FISH(client, channel, user) {
       gFunc.writeFilePromise(files.fishDataFiles, dataToWrite);
     }
   }, error => {
-    console.log('error reading fish file!');
+    console.log(gFunc.mkLog('!err', 'ERROR') + 'error reading fish file!');
   });
 }
   
@@ -105,6 +105,6 @@ export function FISH_STATS(client, channel, user) {
     }
     client.say(channel, message);
   }, error => {
-    console.log('error reading fish file!');
+    console.log(gFunc.mkLog('!err', 'ERROR') + 'error reading fish file!');
   });
 }

@@ -54,7 +54,7 @@ function clearEventSub(clientID, appOAuth) {
             });
             req2.end();
           }
-          console.log(gFunc.mkLog('updt', '$EventSub') + 'events cleared');
+          console.log(gFunc.mkLog('updt', '%EvntSub') + 'events cleared');
           setTimeout(function() {
             finish(0);
           }, 1000);

@@ -186,110 +186,24 @@ export const defCommands = [
     desc: 'A tone indicator lookup based on toneindicators and tonetags on carrd co'
   },
   {
+    // banning functions have been moved to ./projectPenguin.js
     name: 'purge',
     exVar: 'allowPurge',
-    run: function (client, channel, user, query, allowPurge) {
-      // purge means ban everyone in the provided list, bans happen 1.5 seconds apart and will only work if bot is modded
-      // if the owner of this bot does !!allowPurge anywhere the bot is active, this command is allowed for 5 minutes.
-      if(allowPurge.allow){
-        //future implementaion of not using so many setTimeout objects?
-        gFunc.readFilePromise(files.banList, false).then( ban_list => {
-          ban_list = JSON.parse(ban_list);
-          let banEndNum = parseInt(query);
-          if(!banEndNum){
-            banEndNum = ban_list.length;
-          }
-          let i = 0;
-          setInterval(function() {
-            if (i === banEndNum){
-              clearInterval(this);
-            } else {
-              client.say(channel, '/ban ' + ban_list[i]);
-              i++;
-            }
-          }, 1500);
-        }, error => {
-          client.say(channel, 'no list found');
-        });        
-      } else {
-        client.say(channel, 'requires asking the bot owner to enable for safety reasons');
-      }
-    },
+    run: 'PURGE',
     mod: 1,
     desc: 'bans all users on a predefined list. Requires asking the bot owner to enable'
   },
   {
     name: 'allowpurge',
     exVar: 'allowPurge',
-    run: function(client, channel, user, query, allowPurge) {
-      if (/(false)|(stop)/i.test(query)){
-        client.say(channel, 'purge access revoked.')
-        allowPurge.allow = false;
-      } else {
-        allowPurge.allow = true;
-        client.say(channel, 'permission granted.')
-        setTimeout(function() {
-          console.log('purge permissions revoked (if not yet already)');
-          allowPurge.allow = false;
-        }, 300000);
-      }
-    },
+    run: 'ALLOWPURGE',
     mod: -1,
     desc: 'allows use of purge for 5 minutes. or use query \'false\' to end before 5 minutes'
   },
   {
     name: 'penguin',
     exVar: 'autoban',
-    run: function(client, channel, user, query, autoban) {
-      if (autoban[channel].enable === false) {
-        // turn on autoban. Needs to also check the current users and ban any that don't pass
-        autoban[channel].enable = true;
-        client.say(channel, 'the penguin is HERE. 🐧');
-        const needToBan = [];
-        gFunc.readHttps('https://tmi.twitch.tv/group/user/' + channel.slice(1) + '/chatters').then( info => {
-          const users = JSON.parse(info).chatters.viewers;
-          if(typeof(users) === 'undefined') {
-            console.log('error in fetching users!');
-          }
-          gFunc.readFilePromise(files.banList, false).then( ban_list => {
-            ban_list = JSON.parse(ban_list);
-            for (let userIndex = 0; userIndex < users.length; userIndex++) {
-              if (ban_list.includes(users[userIndex])) {
-                needToBan.push(users[userIndex]);
-              } else if (autoban.regex) {
-                if(autoban.regex.test(users[userIndex])) {
-                  needToBan.push(users[userIndex]);
-                }
-              }
-            }
-            let banIndex = 0;
-            (function banWithInterval() {
-              if (banIndex === needToBan.length) {
-                return;
-              } else {
-                const timeBetween = 1000 + Math.random() * 4269;
-                setTimeout(function() {
-                  //console.log('/ban ' + needToBan[banIndex]);
-                  client.say(channel, '/ban ' + needToBan[banIndex]);
-                  banIndex++;
-                  banWithInterval();
-                }, timeBetween);
-              }
-            }());
-          }, err => {
-            console.log('no list found, sorry');
-          });
-        }, err => {
-          console.error(err);
-        });
-      } else {
-        autoban[channel].enable = false;
-        client.say(channel, 'penguin has left...');
-      } /*else {
-        // incorrect or no query
-        client.say(channel, 'Toggle to have the bouncer check out who\'s coming in');
-      } */
-    },
+    run: 'AUTOBAN',
     mod: 1,
     desc: 'Toggle to have a penguin bouncer check out who\'s coming in against the purge list and a regex'
   }

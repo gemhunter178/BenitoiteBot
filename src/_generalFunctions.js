@@ -28,7 +28,7 @@ export const gFunc = {
         if (err) {
           reject(err);
         } else {
-          resolve(gFunc.mkLog('init', '%GENERAL') + fileName + ' updated.');
+          resolve(gFunc.mkLog('updt', '%GENERAL') + fileName + ' updated.');
         }
       });
     });
@@ -40,7 +40,7 @@ export const gFunc = {
     data = JSON.stringify(data);
     fs.writeFile(file, data, (err) => {
       if (err) console.log(err);
-      else console.log(gFunc.mkLog('init', '%GENERAL') + file + ' saved');
+      else console.log(gFunc.mkLog('info', '%GENERAL') + file + ' saved');
     });
   },
   
@@ -55,7 +55,7 @@ export const gFunc = {
           if (createNew) {
             let writeNewFile = this.writeFilePromise(fileName, '{}');
             writeNewFile.then(result => { 
-              console.log(gFunc.mkLog('init', '%GENERAL') + fileName + ' created.');
+              console.log(gFunc.mkLog('info', '%GENERAL') + fileName + ' created.');
               resolve('{}');
             }, error => {
               reject(error);

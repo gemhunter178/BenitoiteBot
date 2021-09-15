@@ -9,6 +9,7 @@ import { hiddenCommands } from './hiddenCommands.js';
 import { BOT_USERNAME, OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS, BANREGEX } from './constants.js';
 import { files } from './filePaths.js';
 import { Cooldown } from './cooldown.js';
+import { ProjectPenguin } from './projectPenguin.js';
 import { FISH , FISH_STATS } from './fishCommand.js';
 import { CODEWORDGAME } from './codewordsGame.js';
 import { MORSE } from './morseDecoder.js';
@@ -29,18 +30,18 @@ export const client = new tmi.Client({
 
 // defining commands
 class Command {
-  constructor(prefix, name, exVar, runFunc, modOnly, desc, functionList) {
-    this.name = name;
-    this.regExp = new RegExp('^' + prefix + name + '\\b', 'i');
-    this.exVar = exVar;
-    if(typeof(runFunc) === 'string'){
-      this.run = functionList[runFunc];
+  constructor(prefix, commandObj, functionList) {
+    this.name = commandObj.name;
+    this.regExp = new RegExp('^' + prefix + commandObj.name + '\\b', 'i');
+    this.exVar = commandObj.exVar;
+    if(typeof(commandObj.run) === 'string'){
+      this.run = functionList[commandObj.run];
     } else {
-      this.run = runFunc;
+      this.run = commandObj.run;
     }
-    this.modOnly = modOnly;
+    this.modOnly = commandObj.mod;
     let description = '';
-    switch (modOnly) {
+    switch (commandObj.mod) {
         case 0:
           // do nothing
           break;
@@ -58,7 +59,7 @@ class Command {
           description = '[UNKNOWN USERLEVEL] ';
           break;
     }
-    description += desc;
+    description += commandObj.desc;
     this.desc = description;
   }
 }
@@ -67,6 +68,9 @@ class Command {
 const functionList = {
   CD_CHANGE: Cooldown.changeCooldown,
   CD_ENABLE: Cooldown.enable,
+  PURGE: ProjectPenguin.purge,
+  ALLOWPURGE: ProjectPenguin.allowPurge,
+  AUTOBAN: ProjectPenguin.autoban,
   WORDSAPI_DEFINE: WordsApi.runCommand,
   FISH: FISH,
   FISH_STATS: FISH_STATS,
@@ -81,11 +85,11 @@ const functionList = {
 
 const commandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
-  commandArray.push(new Command(prefix, defCommands[i].name, defCommands[i].exVar, defCommands[i].run, defCommands[i].mod, defCommands[i].desc, functionList));
+  commandArray.push(new Command(prefix, defCommands[i], functionList));
 }
 console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating commands from _defCommands');
 for (let i = 0; i < hiddenCommands.length; i++) {
-  commandArray.push(new Command(prefix, hiddenCommands[i].name, hiddenCommands[i].exVar, hiddenCommands[i].run, hiddenCommands[i].mod, hiddenCommands[i].desc, functionList));
+  commandArray.push(new Command(prefix, hiddenCommands[i], functionList));
 }
 console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating hidden commands');
 

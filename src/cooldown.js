@@ -75,7 +75,7 @@ export const Cooldown = {
       const splitVersion = cooldownObject.version.split('.');
       if (splitVersion[0] === '1') {
         if (splitVersion[1] <= 2) {
-          console.log(gFunc.mkLog('info', '%GENERAL') + 'pre 1.3 cooldown object found');
+          console.log(gFunc.mkLog('info', '%CoolDwn') + 'pre 1.3 cooldown object found');
           for (const channel in cooldownObject) {
             if (channel !== 'version') {
               for (const command in cooldownObject[channel]) {
@@ -85,7 +85,7 @@ export const Cooldown = {
           }
         }
         if(splitVersion[1] <= 3) {
-          console.log(gFunc.mkLog('info', '%GENERAL') + 'pre 1.4 cooldown object found');
+          console.log(gFunc.mkLog('info', '%CoolDwn') + 'pre 1.4 cooldown object found');
           for (const channel in cooldownObject) {
             if (channel !== 'version') {
               for (const command in cooldownObject[channel]) {
@@ -133,7 +133,7 @@ export const Cooldown = {
       }
     }
     if(needUpdate) {
-      console.log(gFunc.mkLog('updt', '%GENERAL') + 'cooldown file updated to v' + Cooldown.version);
+      console.log(gFunc.mkLog('updt', '%CoolDwn') + 'cooldown file updated to v' + Cooldown.version);
       cooldownObject.version = Cooldown.version;
     }
   },
@@ -145,7 +145,7 @@ export const Cooldown = {
     data = JSON.stringify(data);
     fs.writeFile(files.cooldown, data, (err) => {
       if (err) console.log(err);
-      else console.log(gFunc.mkLog('info', '%GENERAL') + 'cooldown file updated');
+      else console.log(gFunc.mkLog('info', '%CoolDwn') + 'cooldown file updated');
     });
   },
   

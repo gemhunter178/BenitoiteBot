@@ -21,7 +21,7 @@ Files in the `data` folder should be generated automatically, with the exception
 | `CLIENT_ID` | a **string** with the client id provided when registering a Twitch app. It's not currently required but will be important for future updates.|
 | `CLIENT_SECRET` | a **string** with the client secret provided in creating the application, alternatively, clicking the 'new secret' button.|
 | `LISTENER_SECRET` | a **random string**, preferably randomly generated, between 10 and 100 characters |
-| `APP_OAUTH_TOKEN` | s **string** that can be found by running `npm run getappoauth` and copying the `access_token` result. |
+| `APP_OAUTH_TOKEN` | a **string** that can be found by running `npm run getappoauth` and copying the `access_token` result. Requires `CLIENT_ID` and `CLIENT_SECRET` to be filled out.|
 | `OAUTH_TOKEN` | a **string** starting with 'oauth:' and followed by the token
 | `BOT_USERNAME` | a **string** with the username the bot is attached to in Twitch |
 | `CHANNELS` | an **array of strings** on what channels the bot should join |
