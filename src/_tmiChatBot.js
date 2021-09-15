@@ -71,6 +71,8 @@ const functionList = {
   PURGE: ProjectPenguin.purge,
   ALLOWPURGE: ProjectPenguin.allowPurge,
   AUTOBAN: ProjectPenguin.autoban,
+  BANLISTADD: ProjectPenguin.banListAdd,
+  BANLISTREMOVE: ProjectPenguin.banListRemove,
   WORDSAPI_DEFINE: WordsApi.runCommand,
   FISH: FISH,
   FISH_STATS: FISH_STATS,
@@ -119,6 +121,11 @@ Cooldown.init_new(cooldown, CHANNELS);
 
 // save created config above
 Cooldown.saveCooldownFile(cooldown);
+
+// cooldown file is prone to deleting on other bot errors, this creates a backup every 30 mins
+setInterval(function() {
+  gFunc.save(cooldown, files.cooldownBackup);
+}, 1800000);
 
 // check if trivia categories needs updating
 Trivia.getCat(files.triviaCatFile, false);
@@ -211,13 +218,6 @@ client.on('join', (channel, username, self) => {
   if (!self && autoban[channel].enable && BANREGEX){
     if (BANREGEX.test(username)) {
       console.log(gFunc.mkLog('aBan', channel) + username);
-      gFunc.readFilePromise(files.banList, false).then( ban_list => {
-        ban_list = JSON.parse(ban_list);
-        ban_list.unshift(username);
-        gFunc.save(ban_list, files.banList);
-      }, reject => {
-        console.log(reject);
-      });
       const randDelay = 1500 + Math.random() * 10000;
       setTimeout(function() {
         client.say(channel, '/ban ' + username);

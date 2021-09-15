@@ -26,7 +26,7 @@ export const ProjectPenguin = {
             client.say(channel, '/ban ' + ban_list[i]);
             i++;
           }
-        }, 1500);
+        }, 1200);
       }, error => {
         client.say(channel, 'no list found');
       });        
@@ -96,6 +96,65 @@ export const ProjectPenguin = {
     } else {
       autoban[channel].enable = false;
       client.say(channel, 'penguin has left...');
+    }
+  },
+  
+  // add names to ban list
+  banListAdd: function(client, channel, user, query) {
+    if(query.length !== 0) {
+      query = query.split(/[,\s]+/);
+      console.log(query);
+      gFunc.readFilePromise(files.banList, false).then(ban_list => {
+        ban_list = JSON.parse(ban_list);
+        gFunc.save(ban_list, files.banListBackup);
+        let numAdd = 0;
+        for (let i = 0; i < query.length; i++) {
+          if (!ban_list.includes(query[i])) {
+            ban_list.unshift(query[i]);
+            numAdd++;
+          }
+        }
+        gFunc.save(ban_list, files.banList);
+        if(numAdd !== 0) {
+          client.say(channel, numAdd + ' usernames have been added to the list.');
+        } else {
+          client.say(channel, 'all names already accounted for.');
+        }
+      }, reject => {
+        console.log(reject);
+      });
+    } else {
+      client.say(channel, 'needs a query of which username(s) to add. space separated, please.');
+    }
+  },
+  
+  //remove names from ban list
+  banListRemove: function(client, channel, user, query) {
+    if(query.length !== 0) {
+      query = query.split(/[,\s]+/);
+      console.log(query);
+      gFunc.readFilePromise(files.banList, false).then(ban_list => {
+        ban_list = JSON.parse(ban_list);
+        gFunc.save(ban_list, files.banListBackup);
+        let numRem = 0;
+        for (let i = 0; i < query.length; i++) {
+          const indexOfUname = ban_list.indexOf(query[i]);
+          if (indexOfUname !== -1) {
+            ban_list.splice(indexOfUname, 1);
+            numRem++;
+          }
+        }
+        gFunc.save(ban_list, files.banList);
+        if(numRem !== 0) {
+          client.say(channel, numRem + ' usernames have been removed from the list.');
+        } else {
+          client.say(channel, 'no such username(s) found');
+        }
+      }, reject => {
+        console.log(reject);
+      });
+    } else {
+      client.say(channel, 'needs a query of which username(s) to remove. space separated, please.');
     }
   }
 }

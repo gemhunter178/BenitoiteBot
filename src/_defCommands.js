@@ -206,5 +206,17 @@ export const defCommands = [
     run: 'AUTOBAN',
     mod: 1,
     desc: 'Toggle to have a penguin bouncer check out who\'s coming in against the purge list and a regex'
+  },
+  {
+    name: 'banlistadd',
+    run: 'BANLISTADD',
+    mod: 1,
+    desc: 'Adds username(s) to the internal ban list of this bot, space or comma separated usernames please!'
+  },
+  {
+    name: 'banlistrem',
+    run: 'BANLISTREMOVE',
+    mod: 1,
+    desc: 'Removes username(s) from internal ban list, space or comma separated usernames please.'
   }
 ]
