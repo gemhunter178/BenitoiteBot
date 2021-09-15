@@ -103,7 +103,6 @@ export const ProjectPenguin = {
   banListAdd: function(client, channel, user, query) {
     if(query.length !== 0) {
       query = query.split(/[,\s]+/);
-      console.log(query);
       gFunc.readFilePromise(files.banList, false).then(ban_list => {
         ban_list = JSON.parse(ban_list);
         gFunc.save(ban_list, files.banListBackup);
@@ -132,7 +131,6 @@ export const ProjectPenguin = {
   banListRemove: function(client, channel, user, query) {
     if(query.length !== 0) {
       query = query.split(/[,\s]+/);
-      console.log(query);
       gFunc.readFilePromise(files.banList, false).then(ban_list => {
         ban_list = JSON.parse(ban_list);
         gFunc.save(ban_list, files.banListBackup);

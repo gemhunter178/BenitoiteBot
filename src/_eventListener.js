@@ -107,4 +107,7 @@ const main = async function() {
 const waitForClear = require('./_clearEventSub.js');
 waitForClear.clearEventSub(CLIENT_ID, APP_OAUTH_TOKEN, LISTENER_SECRET).then((done) => {
   main();
-})
+  setTimeout(function() {
+    console.log(gFunc.mkLog('warn', '%EvntSub') + 'listening time limit reached! Events listening may require a bot reset.');
+  }, 7200000);
+});
