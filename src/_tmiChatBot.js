@@ -218,7 +218,7 @@ client.on('join', (channel, username, self) => {
   if (!self && autoban[channel].enable && BANREGEX){
     if (BANREGEX.test(username)) {
       console.log(gFunc.mkLog('aBan', channel) + username);
-      const randDelay = 1500 + Math.random() * 10000;
+      const randDelay = 1500 + Math.floor(Math.random() * 10000);
       setTimeout(function() {
         client.say(channel, '/ban ' + username);
       }, randDelay);

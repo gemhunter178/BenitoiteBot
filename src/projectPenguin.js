@@ -78,7 +78,7 @@ export const ProjectPenguin = {
             if (banIndex === needToBan.length) {
               return;
             } else {
-              const timeBetween = 1000 + Math.random() * 4269;
+              const timeBetween = 1000 + Math.floor(Math.random() * 4269);
               setTimeout(function() {
                 //console.log('/ban ' + needToBan[banIndex]);
                 client.say(channel, '/ban ' + needToBan[banIndex]);
