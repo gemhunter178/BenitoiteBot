@@ -26,6 +26,16 @@ object variables:
 
 export const defCommands = [
   {
+    name: 'botinfo',
+    run: function(client, channel, user) {
+      client.say(channel, 'bot code originally made by gemhunter178, running off of nodejs: tmijs, twurple as well as some other libraries'); //tmi.js is missing period due to twitch reading it as a link
+    },
+    cd: 10000,
+    cd_default: true,
+    mod: 0,
+    desc: 'just some general info on the bot'
+  },
+  {
     name: 'hello',
     run: function(client, channel, user) {
       // "Heya, user!"
@@ -159,6 +169,14 @@ export const defCommands = [
     cd_default: false,
     mod: 0,
     desc: 'Converts to/from morse. From morse requires the query to start with \'.\' \'-\' or \'_\' ...or if asking: help -> .... . .-.. .--'
+  },
+  {
+    name: 'blocky',
+    run: 'BLOCKLETTER',
+    cd: 10000,
+    cd_default: false,
+    mod: 1,
+    desc: 'Converts to those blocky regional characters. ...or if asking: help -> 🇭 🇪 🇱 🇵'
   },
   {
     name: 'codeword',

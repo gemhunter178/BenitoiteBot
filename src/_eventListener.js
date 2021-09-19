@@ -115,8 +115,13 @@ const main = async function() {
 // run the first time (on start)
 main();
 
-// run every 2 hours after
-setInterval(main, 7200000);
+//warn in 2 hours
+setTimeout(function() {
+  console.log(gFunc.mkLog('warn', '%EvntSub') + 'listening time limit reached! Events listening may require a bot reset.');
+}, 7200000);
+
+// run every 2 hours after [not working, need to see logs]
+// setInterval(main, 7200000);
 
 /* old, non-import version
 const waitForClear = require('./_clearEventSub.js');

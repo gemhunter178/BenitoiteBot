@@ -1,3 +1,5 @@
+// function for morse encode/decoding
+
 export function MORSE(client, channel, user, query){
   if (query === ''){
     query = `we're going to need something to translate...`;
@@ -110,6 +112,68 @@ export function MORSE(client, channel, user, query){
         query += '[exceeds char limit]';
       }
     }
+  }
+  client.say(channel, query);
+}
+
+//silly little thing above but with the regional indicators
+export function BLOCKLETTER (client, channel, user, query) {
+  const toBlockLetter = {
+    A: '🇦',
+    B: '🇧',
+    C: '🇨',
+    D: '🇩',
+    E: '🇪',
+    F: '🇫',
+    G: '🇬',
+    H: '🇭',
+    I: '🇮',
+    J: '🇯',
+    K: '🇰',
+    L: '🇱',
+    M: '🇲',
+    N: '🇳',
+    O: '🇴',
+    P: '🇵',
+    Q: '🇶',
+    R: '🇷',
+    S: '🇸',
+    T: '🇹',
+    U: '🇺',
+    V: '🇻',
+    W: '🇼',
+    X: '🇽',
+    Y: '🇾',
+    Z: '🇿',
+    '!': '❕',
+    '?': '❔',
+    ' ': '⠀'
+  };
+  query = query.toUpperCase();
+  query = query.split('');
+  for (let i = 0; i < query.length; i++){
+    if (toBlockLetter.hasOwnProperty(query[i])){
+      query[i] = toBlockLetter[query[i]];
+      if (!(query[i] === '❕' || query[i] === '❔')) {
+        query[i] += ' ';
+      }
+      /* previously made to include blood symbols but they look awful on twitch
+      if(!toBlockLetter[query[i]].includes(',')){
+        query[i] = toBlockLetter[query[i]];
+      } else {
+        // note this only works for two characters since that's the most each entry has
+        const temp = toBlockLetter[query[i]].split(',');
+        query[i] = ((Math.random() > 0.5) ? temp[0] : temp[1]);
+      }
+      query[i] += '%20';
+      */
+    }
+  }
+  query = query.join('');
+  query = decodeURIComponent(query);
+  if (query.length > 500) {
+    query = query.slice(0,470);
+    query += '[exceeds char limit]';
   }
   client.say(channel, query);
 }
