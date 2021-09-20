@@ -66,6 +66,16 @@ class Command {
 
 //list to not have to import everything over on _defCommands
 const functionList = {
+  STOP: function(client, channel, user, query, cooldown) {
+    const writeCooldown = JSON.stringify(cooldown);
+    gFunc.writeFilePromise(files.cooldown, writeCooldown).then( pass => {
+      client.say(channel, `Alright, see you later!`);
+      console.log('bot terminated by ' + user['display-name']);
+      process.exit(0);
+    }, error => {
+      client.say(channel, 'error in writing cooldown file before stopping bot');
+    });
+  },
   CD_CHANGE: Cooldown.changeCooldown,
   CD_ENABLE: Cooldown.enable,
   PURGE: ProjectPenguin.purge,
@@ -137,7 +147,7 @@ Trivia.initialize(CHANNELS, files.triviaData);
 let timerObject = Timer.init(CHANNELS);
 
 // purge permissions
-let allowPurge = {allow: false};
+let allowPurge = {allow: true};
 // autoban
 let autoban = {regex: BANREGEX};
 for (let i = 0; i < CHANNELS.length; i++) {

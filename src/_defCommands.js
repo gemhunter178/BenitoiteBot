@@ -1,5 +1,4 @@
 import { files } from './filePaths.js';
-import { gFunc } from './_generalFunctions.js';
 
 // in this case 'def' means default. list of all default commands and some data associated with them
 
@@ -61,16 +60,7 @@ export const defCommands = [
   {
     name: 'goodbye',
     exVar: 'cooldown',
-    run: function(client, channel, user, query, cooldown) {
-      const writeCooldown = JSON.stringify(cooldown);
-      gFunc.writeFilePromise(files.cooldown, writeCooldown).then( pass => {
-        client.say(channel, `Alright, see you later!`);
-        console.log('bot terminated by ' + user['display-name']);
-        process.exit(0);
-      }, error => {
-        client.say(channel, 'error in writing cooldown file before stopping bot');
-      });
-    },
+    run: 'STOP', //function mmoved to _tmiChatBot.js for this file to be compatible with web
     mod: -1,
     desc: 'shuts off the bot',
   },
@@ -84,7 +74,7 @@ export const defCommands = [
           commandmsg.push(prefix + commanditr);
         }
       }
-      commandmsg = gFunc.formatPrintOptions(commandmsg, false);
+      commandmsg = commandmsg.join(', ');
       client.say(channel, 'the current enabled commands on this bot are: ' + commandmsg);
     },
     cd: 1000,
