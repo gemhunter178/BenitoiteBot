@@ -15,7 +15,7 @@ import { CODEWORDGAME } from './codewordsGame.js';
 import { MORSE, BLOCKLETTER } from './morseDecoder.js';
 import { CONVERT } from './convert.js';
 import { InternetLang } from './ILang.js';
-import { WordsApi } from './engCommands.js';
+import { datamuse, WordsApi } from './engCommands.js';
 import { Trivia } from './triviaCommands.js';
 import { Timer } from './timer.js';
 
@@ -83,6 +83,7 @@ const functionList = {
   AUTOBAN: ProjectPenguin.autoban,
   BANLISTADD: ProjectPenguin.banListAdd,
   BANLISTREMOVE: ProjectPenguin.banListRemove,
+  DATAMUSE_DEFINE: datamuse.runCommand,
   WORDSAPI_DEFINE: WordsApi.runCommand,
   FISH: FISH,
   FISH_STATS: FISH_STATS,
@@ -191,6 +192,25 @@ gFunc.readHttps('https://api.frankerfacez.com/v1/badge/bot').then( (list) => {
   console.error(err);
 });
 
+// initialize datamuse object
+let datamuseData;
+datamuse.init(files.datamuseDef, Date.now())
+.then ( data => {
+  if (data) {
+    datamuseData = data;
+    gFunc.save(datamuseData, files.datamuseDef);
+    return datamuseData;
+  } else {
+    console.log(gFunc.mkLog('init', '%datamus') + 'error in making datamuseData object!');
+    return false;
+  }
+}).then((result) => {
+  if(result) {
+    extraVar.datamuseData = result;
+    console.log(gFunc.mkLog('init', '%datamus') + 'successfully added datamuseData to extraVar');
+  }
+});
+
 // initialize wordsAPI object
 let wordsApiData;
 WordsApi.init(files.wordsAPI, Date.now())
@@ -200,13 +220,13 @@ WordsApi.init(files.wordsAPI, Date.now())
     gFunc.save(wordsApiData, files.wordsAPI);
     return wordsApiData;
   } else {
-    console.log(gFunc.mkLog('init', '%GENERAL') + 'error in making wordsApiData object!');
+    console.log(gFunc.mkLog('init', '%wordAPI') + 'error in making wordsApiData object!');
     return false;
   }
 }).then((result) => {
   if(result) {
     extraVar.wordsApiData = [API_KEYS["x-rapidapi-key"],result];
-    console.log(gFunc.mkLog('init', '%GENERAL') + 'successfully added wordsApiData to extraVar');
+    console.log(gFunc.mkLog('init', '%wordAPI') + 'successfully added wordsApiData to extraVar');
   }
 });
 

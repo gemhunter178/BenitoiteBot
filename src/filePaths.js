@@ -7,7 +7,7 @@ export const files = {
   triviaCatFile: './data/triviaCat.json',
   triviaData: './data/triviaData.json',
   wordsAPI: './data/wordsAPI.json',
-  datamuseDef: './data/datamuseDef',
+  datamuseDef: './data/datamuseDef.json',
   banList: './data/ban_list.json',
   banListBackup: './data/ban_list.json.BAK'
 }

@@ -129,12 +129,21 @@ export const defCommands = [
   },
   {
     name: 'define',
+    exVar: 'datamuseData',
+    run: 'DATAMUSE_DEFINE',
+    cd: 5000,
+    cd_default: false,
+    mod: 1,
+    desc: 'returns a definition of the word, powered by datamuse running off WordNet (#notspon). can accept parts of speech after a slash: \'/verb\''
+  },
+  {
+    name: 'define2',
     exVar: 'wordsApiData',
     run: 'WORDSAPI_DEFINE',
     cd: 10000,
     cd_default: false,
     mod: 1,
-    desc: 'returns a definition of the word, powered by WordsApi (#notspon)'
+    desc: 'older command, returns a definition of the word, powered by WordsApi (#notspon)'
   },
   {
     name: 'fish',
