@@ -7,7 +7,7 @@ export const Trivia = {
   getCat: function (file, force) {
     // fetch current time
     const current_time = Date.now();
-    
+
     // resolves a bool of whether the file should be updated, cooldown of a day.
     let checkFile = new Promise ((resolve, reject) => {
       if (force) {
@@ -51,7 +51,7 @@ export const Trivia = {
           formatCategories.retrivalTime = current_time;
           formatCategories = JSON.stringify(formatCategories);
           gFunc.writeFilePromise(file, formatCategories).then(resultWrite => {
-            console.log(resultWrite); 
+            console.log(resultWrite);
           }, errorWrite => {
             console.log(errorWrite)
           });
@@ -147,7 +147,7 @@ export const Trivia = {
           case 5:
             Trivia.changeTime(channel, triviaData, client, query);
             break;
-            
+
           case 6:
             Trivia.showConfig(channel, triviaData, files.triviaCatFile, client);
             break;
@@ -155,7 +155,7 @@ export const Trivia = {
           case 7:
             client.say(channel, 'trivia, powered by Open Trivia Database! (#notspon) to play enter A | B | C | D for multiple choice or T | F for true false questions!');
             break;
-            
+
           case 8:
             client.say(channel, 'forcing category check/update');
             Trivia.getCat(files.triviaCatFile, true);
@@ -163,7 +163,7 @@ export const Trivia = {
         }
       }, error => {
         client.say(channel, 'could not find trivia data file... was it removed?');
-      }); 
+      });
     } else {
       // tries to be helpful and gives closest option
       query = gFunc.closestObjectAttribute(query[0], comList);
@@ -181,11 +181,17 @@ export const Trivia = {
       return;
     }
   },
-  
+
   // based on messages in a saveChat, returns a string to append to message. also deletes used object.
   evalAns: function (saveChatArray, evalObj, correctAns) {
     let message = ' | Congrats to ';
-    const compareTo = new RegExp('^' + correctAns[0] + '$', 'i');
+    if(correctAns === 'True') {
+      correctAns = '(t|true)';
+    } else if (correctAns === 'False') {
+      correctAns = '(f|false)';
+    }
+    const compareTo = new RegExp('^' + correctAns + '(\\s+|$)', 'i');
+    console.log(compareTo);
     for (let i = 0; i < saveChatArray[evalObj].messages.length; i++) {
       if (compareTo.test(saveChatArray[evalObj].messages[i].message)) {
         message += saveChatArray[evalObj].messages[i].user + ' for getting the right answer first!';
@@ -291,7 +297,7 @@ export const Trivia = {
           client.say(channel, 'unknown error, error code: ' + result.response_code);
           break;
       }
-      
+
     }, error => {
       client.say(channel, 'trivia API could not be reached');
     });
@@ -340,7 +346,7 @@ export const Trivia = {
       client.say(channel, 'could not find trivia category file... was it removed?');
     });
   },
-  
+
   // function to change difficulty
   changeDifficulty: function (channel, triviaData, client, message){
     // very similar to changing category
@@ -383,7 +389,7 @@ export const Trivia = {
       client.say(channel, `trivia difficulty changed to: ` + message);
     }
   },
-  
+
   changeType: function (channel, triviaData, client, message) {
     const types = {
       'boolean': 'boolean',
@@ -408,16 +414,16 @@ export const Trivia = {
     }
     client.say(channel, `trivia type changed to: ` + message);
   },
-  
+
   changeTime: function (channel, triviaData, client, message) {
     const inputTime = gFunc.stringToMsec(message)[0];
     triviaData[channel].time = inputTime;
     const saveFile = triviaData.filePath;
     triviaData = JSON.stringify(triviaData);
     gFunc.writeFilePromise(saveFile, triviaData);
-    client.say(channel, `trivia answer time changed to: ` + inputTime/1000 + ' seconds');    
+    client.say(channel, `trivia answer time changed to: ` + inputTime/1000 + ' seconds');
   },
-  
+
   showConfig: function (channel, triviaData, catFile, client){
     // read category file
     gFunc.readFilePromise(catFile, false).then(data => {

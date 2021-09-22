@@ -2,6 +2,7 @@ import fs from 'fs';
 import { files } from './filePaths.js';
 import { API_KEYS } from './constants.js';
 import { gFunc } from './_generalFunctions.js';
+import { prefix } from './_defCommands.js';
 
 function init(fileName, time) {
   return new Promise ( (resolve) => {
@@ -29,8 +30,8 @@ function init(fileName, time) {
 // commands that use datamuse: http://www.datamuse.com/api/. very similar to WordsApi in implementation
 export const datamuse = {
   init: init,
-  
-  disp: function(wordObj, channel, client, arg){
+
+  defDisp: function(wordObj, channel, client, arg){
     const dispArg = arg;
     if (arg) {
       arg = arg.toLowerCase();
@@ -38,14 +39,14 @@ export const datamuse = {
         verb: 'v',
         noun: 'n',
         adjective: 'adj',
-        adverb: 'adv'        
+        adverb: 'adv'
       };
       if (convToPartOfSpeech[arg]) {
         arg = convToPartOfSpeech[arg];
       }
       arg = new RegExp('^' + arg);
     }
-    
+
     if (wordObj.defs) {
       if (wordObj.defs.length > 0) {
         let msg = wordObj.word + '-> ';
@@ -79,24 +80,20 @@ export const datamuse = {
         client.say(channel, 'no definition known from datamuse - note: only n, v, adj, and adv are defined');
       }
     } else {
-      if (wordObj.message) {
-        client.say(channel, wordObj.message);
-      } else {
-        client.say(channel, 'unknown error');
-      }
+      client.say(channel, 'word doesn\'t contain a definition...');
     }
   },
-  
-  runCommand: function (client, channel, user, query, datamuseData) {
+
+  define: function (client, channel, user, query, datamuseData) {
     if (query.length === 0){
-      client.say(channel, 'define, powered by datamuse running off WordNet (#notspon). Please enter a query. Example -> \'!!define peanut butter /noun\'');
+      client.say(channel, 'define, powered by datamuse running off WordNet (#notspon). Please enter a query. Example -> \'' + prefix + 'define peanut butter /noun\'');
       return;
     }
     query = query.split(/\s*\//);
     if (datamuseData.cache[query[0]]) {
       // cache implementaion
       console.log(gFunc.mkLog('info', '%datamus') + query[0] + ' found in cache');
-      datamuse.disp(datamuseData.cache[query[0]], channel, client, query[1]);
+      datamuse.defDisp(datamuseData.cache[query[0]], channel, client, query[1]);
     } else {
       // word and arg does not exist in cache
       if (Date.now() - datamuseData.time > 3600000) {
@@ -111,7 +108,7 @@ export const datamuse = {
         gFunc.readHttps(query[0]).then ( (wordObj) => {
           wordObj = JSON.parse(wordObj);
           if(wordObj.length !== 0) {
-            datamuse.disp(wordObj[0], channel, client, query[1]);
+            datamuse.defDisp(wordObj[0], channel, client, query[1]);
             for (let i = 0; i < wordObj.length; i++) {
               datamuseData.cache[wordObj[i].word] = wordObj[i];
             }
@@ -126,6 +123,39 @@ export const datamuse = {
         client.say(channel, 'maximum API requests reached, cannot retrieve more data this hour');
       }
     }
+  },
+
+  rhyme: function (client, channel, user, query, datamuseData) {
+    if (query.length === 0){
+      client.say(channel, 'rhyme finder, powered by datamuse running off RhymeZone (#notspon). Please enter a query. Example -> \'' + prefix + 'rhyme rhyme\'');
+      return;
+    }
+    if (datamuseData.uses < 3750) {
+      // limit is 100000/day, using this for safety
+      datamuseData.uses++;
+      const keepQueryWord = query;
+      query = 'https://api.datamuse.com/words?rel_rhy=' + query.replace(/\s/g, '') + '&max=10';
+      gFunc.readHttps(query).then ( (wordObj) => {
+        wordObj = JSON.parse(wordObj);
+        if(wordObj.length !== 0) {
+          let msg = keepQueryWord + ' rhymes with: ';
+          for (let i = 0; i < wordObj.length; i++) {
+            if (msg.length > 275) {
+              break;
+            }
+            msg += wordObj[i].word + ', ';
+          }
+          client.say(channel, msg.slice(0,msg.length - 2));
+        } else {
+          client.say(channel, 'no rhymes found...');
+        }
+        gFunc.save(datamuseData, files.datamuseDef);
+      }, (reject) => {
+        console.log(gFunc.mkLog('!err', '%datamus') + 'error detected in getting data');
+      });
+    } else {
+      client.say(channel, 'maximum API requests reached, cannot retrieve more data this hour');
+    }
   }
 }
 
@@ -133,7 +163,7 @@ export const datamuse = {
 export const WordsApi = {
   // check for/create file
   init: init,
-  
+
   /* check cached items (unused for now)
   checkCache: function(wordsData, word, arg) {
     if(wordsData.cache[word][arg]) {
@@ -142,13 +172,13 @@ export const WordsApi = {
       return false;
     }
   },*/
-  
+
   // display based on object fed into it
   disp: function(wordObj, channel, client){
     if (wordObj.definitions) {
       if (wordObj.definitions.length > 0) {
         let msg = wordObj.word + '-> ';
-        for (let i = 0; i < wordObj.definitions.length; i++) {           
+        for (let i = 0; i < wordObj.definitions.length; i++) {
           const addon = ' [' + wordObj.definitions[i].partOfSpeech + ']: ' + wordObj.definitions[i].definition;
           if (msg.length + addon.length > 275) {
             break;
@@ -171,7 +201,7 @@ export const WordsApi = {
       }
     }
   },
-  
+
   runCommand: function (client, channel, user, query, wordsData) {
     // tests if API key exists
     if(wordsData[0]) {

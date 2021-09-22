@@ -3,6 +3,8 @@ A twitch chatbot that was originally created to keep track of !fish records (lon
 
 Bot is still being improved and new commands are still in development!
 
+NOTE: this bot was developed in a windows environment, some regex may need to be changed to not include double escapes ('\\')
+
 ## Getting Started
 Currently requires a few libraries installed through npm.
 If one does not have npm (Node package manager) click [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and follow the instructions for your operating system.
@@ -11,7 +13,7 @@ Then just run:
 ```
 npm install
 ```
-Files in the `data` folder should be generated automatically, with the exception of a `ban_list.json`. 
+Files in the `data` folder should be generated automatically, with the exception of a `ban_list.json`.
 
 ### Getting bot constants
 `constants.sample.js` in `src` should be changed `constants.js` and the data inside should be filled in correctly:
@@ -34,9 +36,9 @@ Do **not** share a filled out version of constants.js, though that should alread
 Also in `src`, change `hiddenCommands.sample.js` to  `hiddenCommands.js`. This file works simlarly to `_defCommands.js` except it's not tracked by git. So, commands you do not wish others to see/use may be placed here. An example command is provided, though it's the same format as `_defCommands.js`.
 
 #### Getting CLIENT_ID, CLIENT_SECRET, and OAUTH_TOKEN
-To start, go to the [Twitch developer site](https://dev.twitch.tv/), sign in and go to your console (should be a button on the top right.) In your console, click the 'Applications' tab and hit the 'Register Your Application' button. 
+To start, go to the [Twitch developer site](https://dev.twitch.tv/), sign in and go to your console (should be a button on the top right.) In your console, click the 'Applications' tab and hit the 'Register Your Application' button.
 
-Name it however you like. 
+Name it however you like.
 
 For the OAuth Redirect URL, enter `http://localhost`.
 
@@ -77,16 +79,16 @@ While logged into the account you want the bot to run as (yourself or a dedicate
 If you still need help on figuring out how to get the above values, consult a video like [this one by Techno Tim](https://www.youtube.com/watch?v=7uSjKbAUHXg)
 
 #### Getting API_KEYS
-The only current API Key needed for the 'define' command comes from [wordsAPI](https://www.wordsapi.com/) which can be obtained by registering an account on [rapidAPI](https://rapidapi.com/) and taking the X-RapidAPI-Key given in [this wordsAPI API Documentation Page](https://rapidapi.com/dpventures/api/wordsapi/) 
+The only current API Key needed for the 'define' command comes from [wordsAPI](https://www.wordsapi.com/) which can be obtained by registering an account on [rapidAPI](https://rapidapi.com/) and taking the X-RapidAPI-Key given in [this wordsAPI API Documentation Page](https://rapidapi.com/dpventures/api/wordsapi/)
 
 ### Starting the bot
-With npm, just run 
+With npm, just run
 ```
 npm run start
 ```
 
 ### Using the purge command
-If one would like to use the purge command provided from this bot to ban a list of people, create a `ban_list.json` and place in an array of strings on what usernames to ban. (Note, will only work in places the bot is a moderator in.) 
+If one would like to use the purge command provided from this bot to ban a list of people, create a `ban_list.json` and place in an array of strings on what usernames to ban. (Note, will only work in places the bot is a moderator in.)
 
 Example content: `["user1", "example", "other_user"]`
 
@@ -107,6 +109,6 @@ setTimeout(function() {
 
 
 ## Bot Reference Page
-A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/) when finished. 
+A bot reference page is currently in development by me, but it should be in [my other website](https://pentagonitestudios.com/) when finished.
 
 A current available [command list](https://pentagonitestudios.com/benitoitebot/commands.html) can be found there.

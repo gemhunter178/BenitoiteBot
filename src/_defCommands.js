@@ -7,11 +7,11 @@ export const prefix = '!!';
 
 /* - - - - - - - - - -
 - for reference, mod level -1 is bot_owner, 0 is everyone, 1 is mods only, 2 is broadcaster only
-- format for functionn args (from _tmiChatBot.js) -> (client, channel, user, query, extra variable) 
+- format for functionn args (from _tmiChatBot.js) -> (client, channel, user, query, extra variable)
 [WARN] Command cannot be named 'help' if you wish for it to be edited by cooldown commands.
 [WARN] Command cannot be named 'all' as enable all has it reserved to enable/disable all commands
 [WARN] query === 'help' is reserved for explaining the command. bypass by making desc: null
-object variables: 
+object variables:
 {
   name: [the name of the command, without the prefix]
   exVar: [the name of the extra variable needed from extraVar in _tmiChatBot.js]
@@ -134,7 +134,16 @@ export const defCommands = [
     cd: 5000,
     cd_default: false,
     mod: 1,
-    desc: 'returns a definition of the word, powered by datamuse running off WordNet (#notspon). can accept parts of speech after a slash: \'/verb\''
+    desc: 'returns a definition of the word, powered by datamuse running off WordNet (#notspon). can accept parts of speech after a slash: \'/verb\'. To get the definition to \'help\', try \'helpp\' (avoids this response)'
+  },
+  {
+    name: 'rhyme',
+    exVar: 'datamuseData',
+    run: 'DATAMUSE_RHYME',
+    cd: 5000,
+    cd_default: false,
+    mod: 1,
+    desc: 'returns perfect rhymes to a word, powered by datamuse running with RhymeZone (#notspon). To get rhymes to \'help\', try using \'yelp\''
   },
   {
     name: 'define2',
