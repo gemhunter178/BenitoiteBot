@@ -3,6 +3,8 @@ A twitch chatbot that was originally created to keep track of !fish records (lon
 
 Bot is still being improved and new commands are still in development!
 
+Pull requests welcome!
+
 NOTE: this bot was developed in a windows environment, some regex may need to be changed to not include double escapes ('\\')
 
 ## Getting Started

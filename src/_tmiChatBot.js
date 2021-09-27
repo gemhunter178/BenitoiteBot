@@ -149,7 +149,7 @@ Trivia.initialize(CHANNELS, files.triviaData);
 let timerObject = Timer.init(CHANNELS);
 
 // purge permissions
-let allowPurge = {allow: true};
+let allowPurge = {allow: false};
 // autoban
 let autoban = {regex: BANREGEX};
 for (let i = 0; i < CHANNELS.length; i++) {

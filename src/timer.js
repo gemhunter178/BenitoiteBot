@@ -1,3 +1,5 @@
+import { gFunc } from './_generalFunctions.js';
+
 // file for all timer-related commands
 export const Timer = {
   // initialize timer objecct
@@ -27,7 +29,7 @@ export const Timer = {
     let plural = ' minutes';
     if (timeMin === 1) plural = ' minute';
     client.say(channel, `Timer set for ` + timeMin + plural + '!');
-    console.log('timer set for ' + timeMin + plural + ' from now in ' + channel);
+    console.log(gFunc.mkLog('info', '%_Timer_') + 'timer set for ' + timeMin + plural + ' from now in ' + channel);
     if (addMsg.length === 0) {
       addMsg = '[TIMER END!] this one was set ' + timeMin + plural + ' ago';
     } else {
@@ -50,7 +52,7 @@ export const Timer = {
     const len = timerObject[channel].length;
     if (len !== 0) {
       const delTimer = timerObject[channel].pop();
-      console.log('stopped timer #' + len + ' in channel ' + channel);
+      console.log(gFunc.mkLog('updt', '%_Timer_') + 'stopped timer #' + len + ' in channel ' + channel);
       client.say(channel, 'last timer (for ' + delTimer._idleTimeout / 60000 + ' mins) deleted');
       clearTimeout(delTimer);
     } else {

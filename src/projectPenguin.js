@@ -26,7 +26,7 @@ export const ProjectPenguin = {
             client.say(channel, '/ban ' + ban_list[i]);
             i++;
           }
-        }, 1200);
+        }, 1000);
       }, error => {
         client.say(channel, 'no list found');
       });        
@@ -44,7 +44,7 @@ export const ProjectPenguin = {
       allowPurge.allow = true;
       client.say(channel, 'permission granted.')
       setTimeout(function() {
-        console.log('purge permissions revoked (if not yet already)');
+        console.log(gFunc.mkLog('note', '%GENERAL') + 'purge permissions revoked (if not yet already)');
         allowPurge.allow = false;
       }, 300000);
     }

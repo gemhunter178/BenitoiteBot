@@ -191,7 +191,6 @@ export const Trivia = {
       correctAns = '(f|false)';
     }
     const compareTo = new RegExp('^' + correctAns + '(\\s+|$)', 'i');
-    console.log(compareTo);
     for (let i = 0; i < saveChatArray[evalObj].messages.length; i++) {
       if (compareTo.test(saveChatArray[evalObj].messages[i].message)) {
         message += saveChatArray[evalObj].messages[i].user + ' for getting the right answer first!';
