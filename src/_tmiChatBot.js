@@ -10,7 +10,7 @@ import { BOT_USERNAME, OAUTH_TOKEN, CHANNELS, OWNER, API_KEYS, BANREGEX } from '
 import { files } from './filePaths.js';
 import { Cooldown } from './cooldown.js';
 import { ProjectPenguin } from './projectPenguin.js';
-import { FISH , FISH_STATS } from './fishCommand.js';
+import { FISH , FISH_STATS, NB_FISHSTATS } from './fishCommand.js';
 import { CODEWORDGAME } from './codewordsGame.js';
 import { MORSE, BLOCKLETTER } from './morseDecoder.js';
 import { CONVERT } from './convert.js';
@@ -28,11 +28,17 @@ export const client = new tmi.Client({
   channels: CHANNELS
 });
 
-// defining commands
+
+
+// defining the Commands class
 class Command {
   constructor(prefix, commandObj, functionList) {
     this.name = commandObj.name;
-    this.regExp = new RegExp('^' + prefix + commandObj.name + '\\b', 'i');
+    if (commandObj.noPrefix) {
+      this.regExp = new RegExp('^' + commandObj.name + '\\b', 'i');
+    } else {
+      this.regExp = new RegExp('^' + prefix + commandObj.name + '\\b', 'i');
+    }
     this.exVar = commandObj.exVar;
     if(typeof(commandObj.run) === 'string'){
       this.run = functionList[commandObj.run];
@@ -64,7 +70,9 @@ class Command {
   }
 }
 
-//list to not have to import everything over on _defCommands
+
+
+// FUNCTION LIST to not have to import everything over on _defCommands
 const functionList = {
   STOP: function(client, channel, user, query, cooldown) {
     const writeCooldown = JSON.stringify(cooldown);
@@ -88,6 +96,7 @@ const functionList = {
   WORDSAPI_DEFINE: WordsApi.runCommand,
   FISH: FISH,
   FISH_STATS: FISH_STATS,
+  NB_FISHSTATS: NB_FISHSTATS,
   CODEWORDGAME: CODEWORDGAME,
   MORSE: MORSE,
   BLOCKLETTER: BLOCKLETTER,
@@ -98,20 +107,92 @@ const functionList = {
   DEL_TIMER: Timer.delLastTimer
 }
 
+
+
+// CREATING COMMANDS HERE
 const commandArray = [];
+const noPrefixCommandArray = [];
 for (let i = 0; i < defCommands.length; i++) {
-  commandArray.push(new Command(prefix, defCommands[i], functionList));
+  if (!defCommands[i].noPrefix) {
+    commandArray.push(new Command(prefix, defCommands[i], functionList));
+  } else {
+    noPrefixCommandArray.push(new Command(prefix, defCommands[i], functionList));
+  }
 }
 console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating commands from _defCommands');
 for (let i = 0; i < hiddenCommands.length; i++) {
-  commandArray.push(new Command(prefix, hiddenCommands[i], functionList));
+  if (!hiddenCommands[i].noPrefix) {
+    commandArray.push(new Command(prefix, hiddenCommands[i], functionList));
+  } else {
+    noPrefixCommandArray.push(new Command(prefix, hiddenCommands[i], functionList));
+  }
 }
 console.log(gFunc.mkLog('init', '%GENERAL') + 'done creating hidden commands');
+
+// function that runs to test which commands to run
+function testForCommand(commands, channel, user, message, current_time, isBroadcaster, isModUp) {
+  for (let i = 0; i < commands.length; i++) {
+    if (commands[i].regExp.test(message)) {
+      console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] cmnd: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
+      let query = message.replace(commands[i].regExp, '');
+      query = query.replace(/^\s+/, '');
+      let runCommand = false;
+      switch (commands[i].modOnly) {
+        case 0:
+          runCommand = Cooldown.checkCooldown(channel, commands[i].name, cooldown, current_time, true)
+          break;
+        case 1:
+          try {
+            runCommand = Cooldown.checkCooldown(channel, commands[i].name, cooldown, current_time, isModUp);
+          } catch {
+            // allows a no-cooldown mod only command
+            runCommand = isModUp;
+          }
+          break;
+
+        case 2:
+          runCommand = isBroadcaster;
+          break;
+
+        case -1:
+          if(user.username === OWNER) {
+            runCommand = true;
+          }
+          break;
+
+        default:
+          //if not defined, do nothing (default is false)
+          break;
+      }
+      try {
+        // mods can always access a command's help
+        if (runCommand || isModUp) {
+          if (query === 'help' && commands[i].desc) {
+            client.say(channel, commands[i].desc)
+          } else if (runCommand) {
+            commands[i].run(client, channel, user, query, extraVar[commands[i].exVar]);
+          }
+        }
+      } catch (err){
+        console.error(err);
+        let addReason = '';
+        // to not flood chat
+        if (err.message.length < 100) {
+          addReason = ' [reason] -> ' + err.message;
+        }
+        client.say(channel, 'error running ' + commands[i].name + addReason);
+      }
+      return;
+    }
+  }
+}
+
+
 
 // for privacy reasons, saved chats aren't stored in any file
 let saveChats = {};
 
-// cooldown initialization
+// COOLDOWN initialization
 let cooldown;
 
 // read cooldown file has to be sync before everything else
@@ -140,6 +221,10 @@ setInterval(function() {
   gFunc.save(cooldown, files.cooldownBackup);
 }, 1800000);
 
+
+
+// OTHER initializations
+
 // check if trivia categories needs updating
 Trivia.getCat(files.triviaCatFile, false);
 // initialize trivia files
@@ -153,8 +238,11 @@ let allowPurge = {allow: false};
 // autoban
 let autoban = {regex: BANREGEX};
 for (let i = 0; i < CHANNELS.length; i++) {
-  autoban[CHANNELS[i]] = {enable: false};
+  autoban[CHANNELS[i]] = {enable: true};
 }
+
+
+
 // object to pass extra variables to object-generated commands
 export const extraVar = {
   cooldown: cooldown,
@@ -165,6 +253,8 @@ export const extraVar = {
   allowPurge: allowPurge,
   autoban: autoban
 }
+
+
 
 // checking for a banned words list
 let bannedWords;
@@ -179,6 +269,8 @@ gFunc.readFilePromise(files.bannedWords, true).then(
 }, (reject) => {
   console.log(gFunc.mkLog('init', '%GENERAL') + 'error fetching banned words\n' + reject);
 });
+
+
 
 // getting a list of known/verified? bots from FFZ
 let botList = [];
@@ -232,6 +324,7 @@ WordsApi.init(files.wordsAPI, Date.now())
 });
 
 
+
 // CLIENT CONNECT + REACT TO MESSAGES HERE
 client.connect();
 
@@ -265,9 +358,7 @@ client.on('notice', (channel, msgid, message) => {
 
 client.on('chat', (channel, user, message, self) => {
   const current_time = Date.now();
-
-  // messages that need to match only the first word
-  let firstWord = message.split(' ')[0];
+  
   // mod only stuff
   let isMod = user.mod || user['user-type'] === 'mod';
   let isBroadcaster = channel.slice(1) === user.username;
@@ -318,62 +409,12 @@ client.on('chat', (channel, user, message, self) => {
     }
   }
 
+  // NoPrefix commands (defined in _defCommands.js and hiddenCommands.js)
+  testForCommand(noPrefixCommandArray, channel, user, message, current_time, isBroadcaster, isModUp);
+
   // commands past this must start with prefix (definied in _defCommands.js)
   if (!message.startsWith(prefix)) return;
 
-  // all commands currently defined in _defCommands.js
-  for (let i = 0; i < commandArray.length; i++) {
-    if (commandArray[i].regExp.test(message)) {
-      console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] cmnd: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
-      let query = message.replace(commandArray[i].regExp, '');
-      query = query.replace(/^\s+/, '');
-      let runCommand = false;
-      switch (commandArray[i].modOnly) {
-        case 0:
-          runCommand = Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, true)
-          break;
-        case 1:
-          try {
-            runCommand = Cooldown.checkCooldown(channel, commandArray[i].name, cooldown, current_time, isModUp);
-          } catch {
-            // allows a no-cooldown mod only command
-            runCommand = isModUp;
-          }
-          break;
-
-        case 2:
-          runCommand = isBroadcaster;
-          break;
-
-        case -1:
-          if(user.username === OWNER) {
-            runCommand = true;
-          }
-          break;
-
-        default:
-          //if not defined, do nothing (default is false)
-          break;
-      }
-      try {
-        // mods can always access a command's help
-        if (runCommand || isModUp) {
-          if (query === 'help' && commandArray[i].desc) {
-            client.say(channel, commandArray[i].desc)
-          } else if (runCommand) {
-            commandArray[i].run(client, channel, user, query, extraVar[commandArray[i].exVar]);
-          }
-        }
-      } catch (err){
-        console.error(err);
-        let addReason = '';
-        // to not flood chat
-        if (err.message.length < 100) {
-          addReason = ' [reason] -> ' + err.message;
-        }
-        client.say(channel, 'error running ' + commandArray[i].name + addReason);
-      }
-      return;
-    }
-  }
+  // all other commands with prefixes (defined in _defCommands.js and hiddenCommands.js)
+  testForCommand(commandArray, channel, user, message, current_time, isBroadcaster, isModUp);
 });

@@ -184,6 +184,7 @@ export const Trivia = {
 
   // based on messages in a saveChat, returns a string to append to message. also deletes used object.
   evalAns: function (saveChatArray, evalObj, correctAns) {
+    // console.log(saveChatArray[evalObj]); // debug to see object
     let message = ' | Congrats to ';
     if(correctAns === 'True') {
       correctAns = '(t|true)';
@@ -227,9 +228,9 @@ export const Trivia = {
           const objName = channel + '-' + time;
           const endTime = time + triviaData[channel].time;
           saveChatArray[objName] = {
-            channel,
-            time,
-            endTime,
+            channel: channel,
+            time: time,
+            endTime: endTime,
             messages: []
           };
           if (triviaData[channel].category === -1) {

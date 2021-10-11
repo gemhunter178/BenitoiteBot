@@ -19,6 +19,7 @@ object variables:
   cd: [default cooldown, in milliseconds if none specified, it will permenantly be enabled]
   cd_default: [boolean if the command should default be enabled or disabled]
   mod: [user level required to use comamnd, see above]
+  noPrefix: [set to true to not use the prefix - WARN: currently buggy and may cause errors] 
   desc: [description of the command when 'help' is used as a query]
 }
 - - - - - - - - - - */
@@ -169,6 +170,16 @@ export const defCommands = [
     cd_default: false,
     mod: 0,
     desc: 'Displays the current month\'s ' + prefix + 'fish records.'
+  },
+  {
+    name: '!fish',
+    exVar: 'saveChats',
+    run: 'NB_FISHSTATS',
+    cd: 1000,
+    cd_default: true,
+    mod: 0,
+    noPrefix: true,
+    desc: 'just a way for this bot to track !fish outputs from nightbot'
   },
   {
     name: 'morse',

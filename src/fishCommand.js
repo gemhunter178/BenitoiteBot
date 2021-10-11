@@ -108,3 +108,57 @@ export function FISH_STATS(client, channel, user) {
     console.log(gFunc.mkLog('!err', 'ERROR') + 'error reading fish file!');
   });
 }
+
+export function NB_FISHSTATS(client, channel, user, query, saveChatArray) {
+  const time = Date.now();
+  const objName = channel + '-' + time;
+  const endTime = time + 2500;
+  saveChatArray[objName] = {
+    channel: channel,
+    time: time,
+    endTime: endTime,
+    messages: []
+  };
+  gFunc.readFilePromise(files.fishDataFiles, false).then( result => {
+    let fishData = JSON.parse(result);
+    const now = new Date();
+    const YearMonth = now.getUTCFullYear().toString()+(now.getUTCMonth()+1).toString().padStart(2, '0');
+    if (!fishData.hasOwnProperty(channel)){
+      fishData[channel] = {};
+    }
+    if (!fishData[channel].hasOwnProperty(YearMonth)){
+      fishData[channel][YearMonth] = {maxUser: "", max: 0, minUser: "", min:50};
+    }
+    setTimeout(function () {
+      let change = false;
+      for (let i = 0; i < saveChatArray[objName].messages.length; i++) {
+        if (saveChatArray[objName].messages[i].user === 'Nightbot') {
+          if (/^[A-z0-9_]+\scaught\sa\sfish\sof\s[0-9\.]+kg!\s\([0-9\.]+lbs\)\s/.test(saveChatArray[objName].messages[i].message)) {
+            // console.log(saveChatArray[objName].messages[i].message);
+            const msg = saveChatArray[objName].messages[i].message.split(' ');
+            const val = parseFloat(msg[6].slice(1)) / 2.2046;
+            if (val > fishData[channel][YearMonth].max) {
+              fishData[channel][YearMonth].max = val;
+              fishData[channel][YearMonth].maxUser = msg[0];
+              change = true;
+            } 
+            if (val  < fishData[channel][YearMonth].min) {
+              fishData[channel][YearMonth].min = val;
+              fishData[channel][YearMonth].minUser = msg[0];
+              change = true;
+            }
+          }
+        }
+      }
+      if (change) {
+        client.say(channel, 'according to my data, that\'s a new record!');
+        gFunc.writeFilePromise(files.fishDataFiles, JSON.stringify(fishData));
+      }
+      delete saveChatArray[objName];
+    }, 2500);
+  }, error => {
+    console.log(gFunc.mkLog('!err', 'ERROR') + 'error reading fish file!');
+  });
+    
+  return;
+}

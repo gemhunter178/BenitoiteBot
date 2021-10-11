@@ -52,12 +52,13 @@ export const Cooldown = {
     
     //initialize new channels
     for (let i = 0; i < channels.length; i++){
+      const cooldownList = Cooldown.default_cooldowns();
       let channel = channels[i];
       // initialize cooldown object for channels that don't have one
       if (!cooldownObject.hasOwnProperty(channel)){
         cooldownObject[channel] = {};
-        for (const command in Cooldown.default_cooldowns()) {
-          cooldownObject[channel][command] = [Cooldown.default_cooldowns()[command], 0];
+        for (const command in cooldownList) {
+          cooldownObject[channel][command] = [cooldownList[command], 0];
         }
       } 
     }
@@ -99,19 +100,21 @@ export const Cooldown = {
         }
       }
     }
+    //initialize list of default cooldowns
+    const cooldownList = Cooldown.default_cooldowns();
     // test for new commands, provided all channels have same set of commands
     const newCommands = [];
     // array for old comamnds to remove
     const oldCommands = [];
     for (const testChannel in cooldownObject) {
       if (testChannel !== 'version'){
-        for (const command in Cooldown.default_cooldowns()) {
+        for (const command in cooldownList) {
           if (!cooldownObject[testChannel][command]){
             newCommands.push(command);
           }
         }
         for (const command in cooldownObject[testChannel]) {
-          if (!Cooldown.default_cooldowns()[command]) {
+          if (!cooldownList[command]) {
             oldCommands.push(command);
           }
         }
@@ -124,7 +127,7 @@ export const Cooldown = {
         for (let j = 0; j < newCommands.length; j++) {
           if (!cooldownObject[channels[i]][newCommands[j]]){
             //initialize as defined
-            cooldownObject[channels[i]][newCommands[j]] = [Cooldown.default_cooldowns()[newCommands[j]], 0];
+            cooldownObject[channels[i]][newCommands[j]] = [cooldownList[newCommands[j]], 0];
           }
         }
         for (let j = 0; j < oldCommands.length; j++) {
@@ -208,6 +211,7 @@ export const Cooldown = {
           }
           cooldown[channel][command][0] = time;
           client.say(channel, Cooldown.addPrefix(command) + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
+          // client.say(channel, command + ` cooldown has been set to ` + Math.abs(time/1000) + ` seconds.`);
           Cooldown.saveCooldownFile(cooldown);
         }
       }
