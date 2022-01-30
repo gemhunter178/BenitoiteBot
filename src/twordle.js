@@ -4,7 +4,7 @@ import { gFunc } from './_generalFunctions.js';
 import dayjs from 'dayjs';
 
 // code for twordle game, a twitch adaptation of wordle. reworked from codewordsGame.js (also in src folder).
-export function TWORDLE(client, channel, user, guess) {
+export function TWORDLE(client, channel, user, query) {
   
   function findNewWord() {
     let returnWord;
@@ -96,20 +96,25 @@ export function TWORDLE(client, channel, user, guess) {
   }
   
   // displays stats, returns a string
-  function displayStats(userData) {
+  function displayStats(userData, showGuesses) {
     let returnMsg = 'Guess: ' + userData.attempt + '/' + userData.maxAttempt + ' ';
     if (userData.attempt === 0) {
       returnMsg += 'no guesses so far.';
     } else {
-      returnMsg += 'squares: ';
-      for (let i = 0; i < userData.prevAttemptSquare.length; i++) {
-        returnMsg += userData.prevAttemptSquare[i];
-        returnMsg += ' ';
-      }
-      returnMsg += 'guesses: ';
-      for (let i = 0; i < userData.prevAttempts.length; i++) {
-        returnMsg += userData.prevAttempts[i];
-        returnMsg += ' ';
+      // to not clutter chat as much, guesses only shown on request
+      if (showGuesses) {
+        returnMsg += 'guesses: ';
+        for (let i = 0; i < userData.prevAttempts.length; i++) {
+          returnMsg += userData.prevAttempts[i];
+          returnMsg += ' ';
+        }
+      } else {
+        returnMsg += 'squares: ';
+        for (let i = 0; i < userData.prevAttemptSquare.length; i++) {
+          returnMsg += userData.prevAttemptSquare[i];
+          returnMsg += ' ';
+        }
+        returnMsg += 'use \'show\' for guesses';
       }
     }
     return returnMsg;
@@ -159,9 +164,9 @@ export function TWORDLE(client, channel, user, guess) {
   }
   
   // 'run' starts here
-  guess = guess.replace(/\s/,'');
-  guess = guess.toLowerCase();
-  guess = guess.split();
+  query = query.replace(/\s/,'');
+  query = query.toLowerCase();
+  query = query.split();
   
   // data file object
   let twordleData;
@@ -200,16 +205,24 @@ export function TWORDLE(client, channel, user, guess) {
     // they are done for today
     const now = new Date();
     const timeToNext = (23 - now.getUTCHours()).toString() + 'h ' + (59 - now.getUTCMinutes()).toString() + 'm';
-    client.say(channel, 'Final stats for ' + user['display-name'] + ' today: ' + displayStats(userData) + '. Next twordle in approx. ' + timeToNext);    
+    if (query[0] === 'show') {
+      client.say(channel, 'Final stats for ' + user['display-name'] + ' today: ' + displayStats(userData, true) + '. Next twordle in approx. ' + timeToNext);
+    } else {
+      client.say(channel, 'Final stats for ' + user['display-name'] + ' today: ' + displayStats(userData, false) + '. Next twordle in approx. ' + timeToNext);  
+    }
   } else {
     // query options
-    if(guess[0].length === 0){
+    if(query[0].length === 0){
       // display current data
-      client.say(channel, 'Stats so far for ' + user['display-name'] + ' ' + displayStats(userData));
-    } else if (guess[0].length !== userData.wordLen) {
-      client.say(channel, 'Your guess doesn\'t match the world length! alternatively, for current stats, leave the query blank');
+      client.say(channel, 'Stats so far for ' + user['display-name'] + ' ' + displayStats(userData, false));
+    } else if (query[0].length !== userData.wordLen) {
+      if (query[0] === 'show') {
+        client.say(channel, 'Stats so far for ' + user['display-name'] + ' ' + displayStats(userData, true));
+      } else {
+        client.say(channel, 'Your guess doesn\'t match the world length! alternatively, for current stats, leave the query blank, or \'show\' for previous guesses');
+      }
     } else {
-      const msg = handleGuess(userData, guess[0]);
+      const msg = handleGuess(userData, query[0]);
       client.say(channel, msg);
     }
   }
