@@ -91,6 +91,7 @@ export function TWORDLE(client, channel, user, query) {
       maxAttempt: maxAttempts(newWord.length),
       prevAttempts: [],
       prevAttemptSquare: [],
+      wrongLetters: [],
       complete: false
     }
   }
@@ -104,17 +105,13 @@ export function TWORDLE(client, channel, user, query) {
       // to not clutter chat as much, guesses only shown on request
       if (showGuesses) {
         returnMsg += 'guesses: ';
-        for (let i = 0; i < userData.prevAttempts.length; i++) {
-          returnMsg += userData.prevAttempts[i];
-          returnMsg += ' ';
-        }
+        returnMsg += userData.prevAttempts.join(', ');
+        returnMsg += ' | your word does not contain: ';
+        returnMsg += userData.wrongLetters.join(', ');
       } else {
         returnMsg += 'squares: ';
-        for (let i = 0; i < userData.prevAttemptSquare.length; i++) {
-          returnMsg += userData.prevAttemptSquare[i];
-          returnMsg += ' ';
-        }
-        returnMsg += 'use \'show\' for guesses';
+        returnMsg += userData.prevAttemptSquare.join(', ');
+        returnMsg += ' use \'show\' for guesses and wrong letters';
       }
     }
     return returnMsg;
@@ -141,6 +138,9 @@ export function TWORDLE(client, channel, user, query) {
         // incorrect letter
         if (squares.length === curSqLen) {
           squares += '⬛';
+          if (!userData.wrongLetters.includes(guess[i])) {
+            userData.wrongLetters.push(guess[i]);
+          }
         }
       }
     }
@@ -218,6 +218,8 @@ export function TWORDLE(client, channel, user, query) {
     } else if (query[0].length !== userData.wordLen) {
       if (query[0] === 'show') {
         client.say(channel, 'Stats so far for ' + user['display-name'] + ' ' + displayStats(userData, true));
+      } else if(query[0] === '!') {
+        client.say(channel, user['display-name'] + ', your word does NOT contain: ' + userData.wrongLetters.join(', '));
       } else {
         client.say(channel, 'Your guess doesn\'t match the world length! alternatively, for current stats, leave the query blank, or \'show\' for previous guesses');
       }
