@@ -60,7 +60,7 @@ export function TWORDLE(client, channel, user, query) {
   
   // function for how many attempts allowed based on word length
   function maxAttempts(wordLen) {
-    return Math.floor(2.5 * (wordLen - 5) + 6);
+    return Math.floor(2 * (wordLen - 5) + 6);
   }
   
   // fetch user data from twordleDataFile, returns userData object
@@ -106,12 +106,17 @@ export function TWORDLE(client, channel, user, query) {
       if (showGuesses) {
         returnMsg += 'guesses: ';
         returnMsg += userData.prevAttempts.join(', ');
-        returnMsg += ' | your word does not contain: ';
-        returnMsg += userData.wrongLetters.join(', ');
+        if (!userData.complete) {
+          returnMsg += ' | your word does not contain: ';
+          returnMsg += userData.wrongLetters.join(', ');
+        }
       } else {
         returnMsg += 'squares: ';
-        returnMsg += userData.prevAttemptSquare.join(', ');
-        returnMsg += ' use \'show\' for guesses and wrong letters';
+        returnMsg += userData.prevAttemptSquare.join(' ');
+        returnMsg += ' use \'show\' for guesses';
+        if (!userData.complete) {
+          returnMsg += ' and wrong letters';
+        }
       }
     }
     return returnMsg;
@@ -156,7 +161,7 @@ export function TWORDLE(client, channel, user, query) {
     userData.prevAttempts.push(guess);
     userData.prevAttemptSquare.push(squares);
     // update complete from reachign attempt limit
-    if (userData.attempt === userData.maxAttempt) {
+    if (userData.attempt === userData.maxAttempt && !userData.complete) {
       userData.complete = true;
       finMsg = ' the word was ' + userData.word;
     }
