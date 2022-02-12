@@ -4,6 +4,8 @@ export const files = {
   bannedWords: './data/bannedWords.json',
   fishDataFiles: './data/fishStats.json',
   codewordGameFile: './data/cdewrdFile.json',
+  twordleWordFile: './data/twordle_dictionary.json',
+  twordleDataFile: './data/twordle_data.json',
   triviaCatFile: './data/triviaCat.json',
   triviaData: './data/triviaData.json',
   wordsAPI: './data/wordsAPI.json',

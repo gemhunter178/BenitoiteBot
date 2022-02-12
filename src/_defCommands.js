@@ -206,6 +206,14 @@ export const defCommands = [
     desc: 'Enter a query and try to find the codeword! example: codeword is "test" -> a query of "seat" would give 2 matching places (-e-t) and 1 other matching character (s)'
   },
   {
+    name: 'twordle',
+    run: 'TWORDLE',
+    cd: 5000,
+    cd_default: false,
+    mod: 0,
+    desc: 'A twitch variation of popular game \'Wordle\' words may be longer than 5 letters, attempts are adjusted accordingly. Words are per-username and reset at midnight UTC (GMT)'
+  },
+  {
     name: 'trivia',
     exVar: 'saveChats',
     run: 'TRIVIA_COMMAND',
@@ -221,6 +229,24 @@ export const defCommands = [
     cd_default: false,
     mod: 0,
     desc: 'A tone indicator lookup based on toneindicators and tonetags on carrd co'
+  },
+  {
+    name: 'play',
+    run: function (client, channel) {
+      client.say(channel, '!play');
+    },
+    mod: -1,
+    desc: 'for Marbles streams to allow this bot to play.'
+  },
+  {
+    name: 'so',
+    run: function (client, channel, user, query) {
+      client.say(channel, 'Shout out to ' + query + '! Go give them a follow over at http://twitch.tv/' + query + ' !');
+    },
+    cd: 1000,
+    cd_default: true,
+    mod: 1,
+    desc: 'an alternate shoutout command in case nightbot/bot of choice is down.'
   },
   {
     // banning functions have been moved to ./projectPenguin.js

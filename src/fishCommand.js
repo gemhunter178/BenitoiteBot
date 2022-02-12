@@ -99,7 +99,7 @@ export function FISH_STATS(client, channel, user) {
     let message = "";
     if (fishData.hasOwnProperty(channel) && fishData[channel].hasOwnProperty(YearMonth)){
       fishData = fishData[channel][YearMonth]
-      message = "The !!fish records for this month: largest was " + fishData.maxUser + " with a fish of " + fishData.max.toFixed(2) + 'kg! (' + (fishData.max * 2.20462).toFixed(2) + "lbs) and the smallest was " + fishData.minUser + " with a fish of " + fishData.min.toFixed(2) + 'kg! (' + (fishData.min * 2.20462).toFixed(2) + "lbs)";
+      message = "The !fish records for this month: The largest fish was " + fishData.max.toFixed(2) + 'kg (' + (fishData.max * 2.20462).toFixed(2) + "lbs) caught by " + fishData.maxUser + "! and the smallest fish was " + fishData.min.toFixed(2) + 'kg (' + (fishData.min * 2.20462).toFixed(2) + "lbs) caught by " + fishData.minUser + "!";
     } else {
       message = "The !!fish records have not been set this month...";
     }
@@ -152,7 +152,11 @@ export function NB_FISHSTATS(client, channel, user, query, saveChatArray) {
       }
       if (change) {
         client.say(channel, 'according to my data, that\'s a new record!');
-        gFunc.writeFilePromise(files.fishDataFiles, JSON.stringify(fishData));
+        gFunc.writeFilePromise(files.fishDataFiles, JSON.stringify(fishData)).then( resolve => {
+          // nothing here
+        }, reject => {
+          console.log(gFunc.mkLog('!err', 'ERROR') + 'error writing fish file!');
+        } );
       }
       delete saveChatArray[objName];
     }, 2500);

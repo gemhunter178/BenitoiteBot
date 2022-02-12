@@ -11,13 +11,13 @@
   "author": "Gem",
   "license": "ISC",
   "dependencies": {
-    "@twurple/api": "^5.0.1",
-    "@twurple/auth": "^5.0.1",
-    "@twurple/eventsub": "^5.0.1",
-    "@twurple/eventsub-ngrok": "^5.0.1",
-    "dayjs": "^1.10.6",
+    "@twurple/api": "^5.0.14",
+    "@twurple/auth": "^5.0.14",
+    "@twurple/eventsub": "^5.0.14",
+    "@twurple/eventsub-ngrok": "^5.0.14",
+    "dayjs": "^1.10.7",
     "esm": "^3.2.25",
     "homoglyph-search": "^1.2.1",
-    "tmi.js": "^1.8.3"
+    "tmi.js": "^1.8.5"
   }
 }

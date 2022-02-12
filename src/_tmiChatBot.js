@@ -12,6 +12,7 @@ import { Cooldown } from './cooldown.js';
 import { ProjectPenguin } from './projectPenguin.js';
 import { FISH , FISH_STATS, NB_FISHSTATS } from './fishCommand.js';
 import { CODEWORDGAME } from './codewordsGame.js';
+import { TWORDLE } from './twordle.js';
 import { MORSE, BLOCKLETTER } from './morseDecoder.js';
 import { CONVERT } from './convert.js';
 import { InternetLang } from './ILang.js';
@@ -98,6 +99,7 @@ const functionList = {
   FISH_STATS: FISH_STATS,
   NB_FISHSTATS: NB_FISHSTATS,
   CODEWORDGAME: CODEWORDGAME,
+  TWORDLE: TWORDLE,
   MORSE: MORSE,
   BLOCKLETTER: BLOCKLETTER,
   CONVERT: CONVERT,
