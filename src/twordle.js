@@ -92,6 +92,7 @@ export function TWORDLE(client, channel, user, query) {
       prevAttempts: [],
       prevAttemptSquare: [],
       wrongLetters: [],
+      rightLetters: [],
       complete: false
     }
   }
@@ -127,30 +128,52 @@ export function TWORDLE(client, channel, user, query) {
     // output message
     let squares = '';
     let finMsg = '';
-    let samePlace = 0;
+    let samePlace = [];
+    // copy word to not alter original word
+    let userWordCopy = userData.word;
+    // first pass check if right letter right spot
     for (let i = 0; i < userData.wordLen; i++) {
       if(guess[i] === userData.word[i]){
-        samePlace++;
+        samePlace.push(i);
+        if (i !== userData.wordLen - 1) {
+          userWordCopy = userWordCopy.slice(0, i) + '~' + userWordCopy.slice(i + 1);
+        }
+        if (!userData.rightLetters.includes(guess[i])) {
+          userData.rightLetters.push(guess[i]);
+        }
+      }
+    }
+    // second pass right letter wrong place
+    for (let i = 0; i < userData.wordLen; i++) {
+      // only test if previously wrong
+      if (samePlace.includes(i)) {
         squares += '🟩';
       } else {
         const curSqLen = squares.length;
         for (let j = 0; j < userData.wordLen; j++) {
-          if (guess[i] === userData.word[j]) {
+          if (guess[i] === userWordCopy[j]) {
             squares += '🟨';
+            // implement duplicate letter handler (replace tested letter with something unused)
+            if (i !== userData.wordLen - 1) {
+              userWordCopy = userWordCopy.slice(0, j) + '~' + userWordCopy.slice(j + 1);
+            }
+            if (!userData.rightLetters.includes(guess[i])) {
+              userData.rightLetters.push(guess[i]);
+            }
             break;
           }
         }
         // incorrect letter
         if (squares.length === curSqLen) {
           squares += '⬛';
-          if (!userData.wrongLetters.includes(guess[i])) {
+          if (!userData.wrongLetters.includes(guess[i]) && !userData.rightLetters.includes(guess[i])) {
             userData.wrongLetters.push(guess[i]);
           }
         }
       }
     }
 
-    if(samePlace === userData.wordLen){
+    if(samePlace.length === userData.wordLen){
       // they got it right
       userData.complete = true;
       finMsg = ' Congrats! you got it!';
