@@ -93,6 +93,7 @@ export function TWORDLE(client, channel, user, query) {
       prevAttemptSquare: [],
       wrongLetters: [],
       rightLetters: [],
+      leftLetters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
       complete: false
     }
   }
@@ -116,7 +117,7 @@ export function TWORDLE(client, channel, user, query) {
         returnMsg += userData.prevAttemptSquare.join(' ');
         returnMsg += ' use \'show\' for guesses';
         if (!userData.complete) {
-          returnMsg += ' and wrong letters';
+          returnMsg += ' or \'!\' for letter info';
         }
       }
     }
@@ -133,11 +134,18 @@ export function TWORDLE(client, channel, user, query) {
     let userWordCopy = userData.word;
     // first pass check if right letter right spot
     for (let i = 0; i < userData.wordLen; i++) {
+      // index of letter if existins in leftLetters
+      const letterIndex = userData.leftLetters.indexOf(guess[i]);
+      // remove letters used in guess from leftLetters
+      if (letterIndex > -1) {
+        userData.leftLetters.splice(letterIndex, 1);
+      }
       if(guess[i] === userData.word[i]){
         samePlace.push(i);
         if (i !== userData.wordLen - 1) {
           userWordCopy = userWordCopy.slice(0, i) + '~' + userWordCopy.slice(i + 1);
         }
+        // push the correct letter into rightLetters array
         if (!userData.rightLetters.includes(guess[i])) {
           userData.rightLetters.push(guess[i]);
         }
@@ -145,10 +153,12 @@ export function TWORDLE(client, channel, user, query) {
     }
     // second pass right letter wrong place
     for (let i = 0; i < userData.wordLen; i++) {
-      // only test if previously wrong
       if (samePlace.includes(i)) {
+        // letter deemed corrrct in previous pass
         squares += '🟩';
       } else {
+        // only test if previously wrong
+        // used to test if the letter is wrong (length won't change)
         const curSqLen = squares.length;
         for (let j = 0; j < userData.wordLen; j++) {
           if (guess[i] === userWordCopy[j]) {
@@ -157,6 +167,7 @@ export function TWORDLE(client, channel, user, query) {
             if (i !== userData.wordLen - 1) {
               userWordCopy = userWordCopy.slice(0, j) + '~' + userWordCopy.slice(j + 1);
             }
+            // push the correct letter (but wrong spot) into rightLetters array
             if (!userData.rightLetters.includes(guess[i])) {
               userData.rightLetters.push(guess[i]);
             }
@@ -166,6 +177,7 @@ export function TWORDLE(client, channel, user, query) {
         // incorrect letter
         if (squares.length === curSqLen) {
           squares += '⬛';
+          // if letter is not in any current list
           if (!userData.wrongLetters.includes(guess[i]) && !userData.rightLetters.includes(guess[i])) {
             userData.wrongLetters.push(guess[i]);
           }
@@ -247,7 +259,19 @@ export function TWORDLE(client, channel, user, query) {
       if (query[0] === 'show') {
         client.say(channel, 'Stats so far for ' + user['display-name'] + ' ' + displayStats(userData, true));
       } else if(query[0] === '!') {
-        client.say(channel, user['display-name'] + ', your word does NOT contain: ' + userData.wrongLetters.join(', '));
+        // variable message for letter info
+        let letterMsg = 'letter info for ' + user['display-name'];
+        if (userData.wrongLetters.length) {
+          letterMsg += ' | it does NOT contain: ' + userData.wrongLetters.join(' ');
+        }
+        if (userData.rightLetters.length) {
+          letterMsg += ' | it contains: ' + userData.rightLetters.join(' ');
+        }
+        if (userData.leftLetters.length) {
+          letterMsg += ' | you have yet to use: ' + userData.leftLetters.join(' ')
+        }
+        //output letter info
+        client.say(channel, letterMsg);
       } else {
         client.say(channel, 'Your guess doesn\'t match the world length! alternatively, for current stats, leave the query blank, or \'show\' for previous guesses');
       }
