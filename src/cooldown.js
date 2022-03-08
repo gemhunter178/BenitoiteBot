@@ -144,11 +144,16 @@ export const Cooldown = {
   //eventually may need a funtion to remove old depreicated cooldowns.
   
   // saves the current working cooldown file
-  saveCooldownFile: function (data){
+  saveCooldownFile: function (data, filePath){
     data = JSON.stringify(data);
-    fs.writeFile(files.cooldown, data, (err) => {
+    let saveToFile = files.cooldown;
+    // if no filePath defined, save to usual cooldown file location (added for testing)
+    if (filePath) {
+      saveToFile = filePath;
+    }
+    fs.writeFile(filePath, data, (err) => {
       if (err) console.log(err);
-      else console.log(gFunc.mkLog('info', '%CoolDwn') + 'cooldown file updated');
+      else console.log(gFunc.mkLog('info', '%CoolDwn') + 'cooldown file updated at ' + filePath);
     });
   },
   

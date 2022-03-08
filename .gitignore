@@ -19,4 +19,5 @@ data/*.json
 package-lock.json
 data/Temp_Commands.js
 src/hiddenCommands.js
+test/*.json
 *.BAK

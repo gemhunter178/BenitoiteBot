@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node .",
     "getappoauth": "node ./func/getAppOauth.js",
+    "testmenu": "node ./test/test_menu.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gem",
