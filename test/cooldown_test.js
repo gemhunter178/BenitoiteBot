@@ -30,6 +30,9 @@ CHANNELS.forEach(function(channel, index) {
   this[index] = '#' + channel;
 }, CHANNELS)
 
+// add a test channel to test initializations
+CHANNELS.unshift('■■■testInit■■■');
+
 // initialize values for new channels
 Cooldown.init_new(cooldown, CHANNELS);
 

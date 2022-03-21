@@ -138,34 +138,24 @@ function testForCommand(commands, channel, user, message, current_time, isBroadc
       console.log('['+ dayjs(current_time).format('HH:mm:ss') + '] cmnd: [' + channel + ']: ' + '<' + user['display-name'] + '>: ' + message);
       let query = message.replace(commands[i].regExp, '');
       query = query.replace(/^\s+/, '');
-      let runCommand = false;
-      switch (commands[i].modOnly) {
-        case 0:
-          runCommand = Cooldown.checkCooldown(channel, commands[i].name, cooldown, current_time, true)
-          break;
-        case 1:
-          try {
-            runCommand = Cooldown.checkCooldown(channel, commands[i].name, cooldown, current_time, isModUp);
-          } catch {
-            // allows a no-cooldown mod only command
-            runCommand = isModUp;
-          }
-          break;
-
-        case 2:
-          runCommand = isBroadcaster;
-          break;
-
-        case -1:
-          if(user.username === OWNER) {
-            runCommand = true;
-          }
-          break;
-
-        default:
-          //if not defined, do nothing (default is false)
-          break;
+      // user level variable if a command should run or not
+      let userLvl = 0;
+      if (isBroadcaster) {
+        userLvl = 2
+      } else if (isModUp) {
+        userLvl = 1;
       }
+      let isBotOwner = false;
+      if(user.username === OWNER) {
+        isBotOwner = true;
+      }
+      let runCommand = Cooldown.checkCooldown(channel, commands[i].name, cooldown, current_time, userLvl, isBotOwner);
+      
+      //no cooldown mod-only commands
+      if (commands[i].modOnly === 1 && !runCommand) {
+        runCommand = isModUp;
+      }
+      
       try {
         // mods can always access a command's help
         if (runCommand || isModUp) {

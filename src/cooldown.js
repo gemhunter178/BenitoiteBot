@@ -8,9 +8,31 @@ import fs from 'fs';
 // implements the cooldown functionality
 export const Cooldown = {
   // version number
-  version: '1.4',
-  
-  // default cooldowns creator for versions 1.4 and up
+  version: '1.5',
+
+  // default cooldowns creator for 1.5
+  default_cooldowns: function(includeDisabled) {
+    // get cooldown from files
+    function getDefCd (cdObject, addToObject) {
+      for (let i = 0; i < cdObject.length; i++) {
+        if (cdObject[i].cd && (cdObject[i].cd_default || includeDisabled)) {
+          addToObject[cdObject[i].name] = {
+            cooldown: cdObject[i].cd,
+            lastUse: 0,
+            userLevel: cdObject[i].mod,
+            usePrefix: !cdObject[i].noPrefix
+          };
+        }
+      }
+    }
+    //default cooldowns object
+    const def_cooldowns = {};
+    getDefCd (defCommands, def_cooldowns);
+    getDefCd (hiddenCommands, def_cooldowns);
+    return def_cooldowns;
+  },
+
+  /* DEPRECATED default cooldowns creator for version 1.4
   default_cooldowns: function() {
     // get cooldown from files
     function getDefCd (cdObject, addToObject) {
@@ -26,6 +48,7 @@ export const Cooldown = {
     getDefCd (hiddenCommands, def_cooldowns);
     return def_cooldowns;
   },
+  */
   
   /* deprecated, used for cooldown versions up to 1.3.2
   default_cooldowns: {
@@ -98,43 +121,67 @@ export const Cooldown = {
             }
           }
         }
-      }
-    }
-    //initialize list of default cooldowns
-    const cooldownList = Cooldown.default_cooldowns();
-    // test for new commands, provided all channels have same set of commands
-    const newCommands = [];
-    // array for old comamnds to remove
-    const oldCommands = [];
-    for (const testChannel in cooldownObject) {
-      if (testChannel !== 'version'){
-        for (const command in cooldownList) {
-          if (!cooldownObject[testChannel][command]){
-            newCommands.push(command);
+        if(splitVersion[1] <= 4) {
+          console.log(gFunc.mkLog('info', '%CoolDwn') + 'pre 1.5 cooldown object found');
+          // object to compare against to use prefix and mod levels
+          const compareDefault = Cooldown.default_cooldowns(true);
+          for (const channel in cooldownObject) {
+            if (channel !== 'version') {
+              for (const command in cooldownObject[channel]) {
+                // this version simply removes disabled commands, and makes cooldown items into objects
+                if (cooldownObject[channel][command][0] < 0) {
+                  delete cooldownObject[channel][command];
+                } else {
+                  cooldownObject[channel][command] = {
+                    cooldown: cooldownObject[channel][command][0],
+                    lastUse: cooldownObject[channel][command][1],
+                    userLevel: compareDefault[command].userLevel,
+                    usePrefix: compareDefault[command].usePrefix
+                  };
+                }
+              }
+            }
           }
-        }
-        for (const command in cooldownObject[testChannel]) {
-          if (!cooldownList[command]) {
-            oldCommands.push(command);
-          }
-        }
-        break;
-      }
-    }
-    // add or remove commands as needed
-    for (let i = 0; i < channels.length ; i++) {
-      if (cooldownObject[channels[i]]) {
-        for (let j = 0; j < newCommands.length; j++) {
-          if (!cooldownObject[channels[i]][newCommands[j]]){
-            //initialize as defined
-            cooldownObject[channels[i]][newCommands[j]] = [cooldownList[newCommands[j]], 0];
-          }
-        }
-        for (let j = 0; j < oldCommands.length; j++) {
-          delete cooldownObject[channels[i]][oldCommands[j]];
         }
       }
     }
+    /* DEPRECATED for versions before 1.5
+      //initialize list of default cooldowns
+      const cooldownList = Cooldown.default_cooldowns();
+      // test for new commands, provided all channels have same set of commands
+      const newCommands = [];
+      // array for old comamnds to remove
+      const oldCommands = [];
+      for (const testChannel in cooldownObject) {
+        if (testChannel !== 'version'){
+          for (const command in cooldownList) {
+            if (!cooldownObject[testChannel][command]){
+              newCommands.push(command);
+            }
+          }
+          for (const command in cooldownObject[testChannel]) {
+            if (!cooldownList[command]) {
+              oldCommands.push(command);
+            }
+          }
+          break;
+        }
+      }
+      // add or remove commands as needed
+      for (let i = 0; i < channels.length ; i++) {
+        if (cooldownObject[channels[i]]) {
+          for (let j = 0; j < newCommands.length; j++) {
+            if (!cooldownObject[channels[i]][newCommands[j]]){
+              //initialize as defined
+              cooldownObject[channels[i]][newCommands[j]] = [cooldownList[newCommands[j]], 0];
+            }
+          }
+          for (let j = 0; j < oldCommands.length; j++) {
+            delete cooldownObject[channels[i]][oldCommands[j]];
+          }
+        }
+      }
+    */
     if(needUpdate) {
       console.log(gFunc.mkLog('updt', '%CoolDwn') + 'cooldown file updated to v' + Cooldown.version);
       cooldownObject.version = Cooldown.version;
@@ -167,20 +214,31 @@ export const Cooldown = {
   },
   
   // tests for cooldown, sets and returns true if command is available. else returns false
-  checkCooldown: function (channel, command, cooldownObject, time, allow){
-    if (!allow) {
+  checkCooldown: function (channel, command, cooldownObject, time, userLevel, isBotOwner){
+    if(!cooldownObject[channel][command]) {
+      // command disabled or does not exist
       return false;
-    } else if(!cooldownObject[channel][command]) {
-      throw new Error('cooldown attribute for ' + command + ' is missing');
-    } else if (cooldownObject[channel][command][0] < 0) {
-      return false;
-    } else if (time - cooldownObject[channel][command][1] > cooldownObject[channel][command][0]) {
-      // cooldown is over
-      cooldownObject[channel][command][1] = time;
-      return true;
     } else {
+      // test if user has permission to use
+      let canUse = false;
+      if (userLevel > cooldownObject[channel][command].userLevel) {
+        canUse = true;
+      } else if (isBotOwner && cooldownObject[channel][command].userLevel === -1) {
+        canUse = true;
+      }
+      
+      if (canUse) {
+        // test if cooldown is over
+        if (time - cooldownObject[channel][command].lastUse > cooldownObject[channel][command].cooldown) {
+          // cooldown is over
+          cooldownObject[channel][command][1] = time;
+          return true;
+        }
+      }
+      
+      // if nothing else applied
       return false;
-    }    
+    }
   },
   
   // command to parse message and change cooldown time if no syntax errors

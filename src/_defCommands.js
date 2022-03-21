@@ -16,7 +16,7 @@ object variables:
   name: [the name of the command, without the prefix]
   exVar: [the name of the extra variable needed from extraVar in _tmiChatBot.js]
   run: [function to run on activation of the command - if string, it will call the matching property in functionList on _tmiChatBot.js]
-  cd: [default cooldown, in milliseconds if none specified, it will permenantly be enabled]
+  cd: [default cooldown, in milliseconds. If none specified, it will permenantly be enabled]
   cd_default: [boolean if the command should default be enabled or disabled]
   mod: [user level required to use comamnd, see above]
   noPrefix: [set to true to not use the prefix - WARN: currently buggy and may cause errors] 
